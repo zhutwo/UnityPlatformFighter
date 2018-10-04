@@ -53,6 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\CameraFollow.cs" />
      <Compile Include="Assets\Scripts\DolphControls.cs" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
