@@ -19,7 +19,9 @@ public class Avatar : MonoBehaviour {
 		SPECIAL,
 		DEFEND,
 		GROUNDSTUN,
-		COMBO
+		COMBO,
+		ROLL,
+		TECH
 	}
 
 	public enum Weapon {
@@ -33,12 +35,13 @@ public class Avatar : MonoBehaviour {
 	const float GROUND_STUN_THRESHOLD = 60.0f;
 	const float TECH_WINDOW = 0.25f;
 	const int MAX_METER = 3000;
-	const int METER_CHARGE_RATE = 3;
+	const int METER_CHARGE_RATE = 5;
 	const int METER_DAMAGE_RATIO = 5;
 
 	KeyCode ATTACK = KeyCode.Mouse0;
 	KeyCode DEFEND = KeyCode.Mouse1;
 	KeyCode SPECIAL = KeyCode.LeftShift;
+	KeyCode RELOAD = KeyCode.R;
 	KeyCode JUMP = KeyCode.Space;
 	KeyCode RIGHT = KeyCode.D;
 	KeyCode LEFT = KeyCode.A;
@@ -50,6 +53,7 @@ public class Avatar : MonoBehaviour {
 	Camera mainCamera;
 	Animator anim;
 	Rigidbody rb;
+	AudioSource audio;
 	Ray ray;
 	Vector3 mouseWorldPosition;
 	Vector3 specialVector;
@@ -89,6 +93,9 @@ public class Avatar : MonoBehaviour {
 	[SerializeField] bool control = true;
 	[SerializeField] State currentState;
 	[SerializeField] Weapon currentWeapon;
+	[SerializeField] UIManager ui;
+	[SerializeField] GameObject trailPrefab;
+	[SerializeField] public int playerID;
 
 	[Header("Stats")]
 	[SerializeField] float weight;
@@ -185,6 +192,7 @@ public class Avatar : MonoBehaviour {
 	void Start() {
 		anim = GetComponent<Animator>();
 		rb = GetComponent<Rigidbody>();
+		audio = GetComponent<AudioSource>();
 		mainCamera = Camera.main;
 		mousePlane = new Plane(Vector3.back, transform.position);
 		currentState = State.IDLE;
@@ -201,7 +209,7 @@ public class Avatar : MonoBehaviour {
 		}
 		ammo = clipSize;
 		health = maxhealth;
-		meter = MAX_METER / 3;
+		meter = MAX_METER;
 		startRotation = hipRotationBone.transform.rotation;
 	}
 	
@@ -253,6 +261,11 @@ public class Avatar : MonoBehaviour {
 				meter = MAX_METER;
 			}
 		}
+		if (currentState == State.TUMBLE)
+		{
+			Instantiate(trailPrefab, transform.position, transform.rotation);
+		}
+		UpdateUI();
 	}
 
 	void LateUpdate() {
@@ -384,7 +397,18 @@ public class Avatar : MonoBehaviour {
 		{
 			if (isGrounded && currentWeapon == Weapon.MELEE)
 			{
-				anim.SetTrigger("defendTrigger");
+				if (currentState == State.RUNFWD)
+				{
+					anim.SetTrigger("FwdRollTrigger");
+				}
+				else if (currentState == State.RUNBACK)
+				{
+					anim.SetTrigger("BackRollTrigger");
+				}
+				else
+				{
+					anim.SetTrigger("defendTrigger");
+				}
 			}
 		}
 		else if (Input.GetKeyDown(SPECIAL))
@@ -397,6 +421,10 @@ public class Avatar : MonoBehaviour {
 		else if (Input.GetAxis("Mouse ScrollWheel") != 0.0f)
 		{
 			ChangeWeapon();
+		}
+		else if (Input.GetKeyDown(RELOAD))
+		{
+			Reload();
 		}
 	}
 
@@ -471,7 +499,7 @@ public class Avatar : MonoBehaviour {
 					
 					if (currentState == State.AERIAL)
 					{
-						anim.SetTrigger("SoftLandTrigger");
+						anim.SetTrigger("HardLandTrigger");
 					}
 					
 					if (rb.velocity.y < -hardLandThresholdSpeed)
@@ -529,7 +557,7 @@ public class Avatar : MonoBehaviour {
 		rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
 		if (isHitstun)
 		{
-			rb.velocity = knockbackToApply / 10.0f;
+			rb.velocity = knockbackToApply / 8.0f;
 
 			techTimer = 0.0f;
 			wasTechPressed = false;
@@ -842,6 +870,7 @@ public class Avatar : MonoBehaviour {
 		isShotCooldown = true;
 		shotTimer = shotCooldown;
 		muzzleFlash.SetActive(true);
+		audio.Play();
 		for (int i = 0; i < tracersPerShot; i++)
 		{
 			spread = Random.Range(-weaponSpread, weaponSpread);
@@ -937,6 +966,21 @@ public class Avatar : MonoBehaviour {
 		{
 			techTimer -= Time.deltaTime;
 		}
+	}
+
+	void UpdateUI() {
+		ui.SetAmmo(ammo, playerID);
+		ui.SetMeter(meter, MAX_METER, playerID);
+		ui.SetDamage((int)damage, playerID);
+	}
+
+	public void Respawn(Vector3 position) {
+		ammo = clipSize;
+		damage = 0.0f;
+		meter = MAX_METER;
+		rb.transform.position = position;
+		currentState = State.IDLE;
+		anim.SetTrigger("AirIdleTrigger");
 	}
 
 	#endregion

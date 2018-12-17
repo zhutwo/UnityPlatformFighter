@@ -180,7 +180,7 @@ GameObject:
   - component: {fileID: 114654255110505192}
   m_Layer: 11
   m_Name: Dolph
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1831,7 +1831,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65c4ffffefda1464888afe259f25e00c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  control: 1
+  control: 0
   currentState: 0
   currentWeapon: 0
   weight: 80

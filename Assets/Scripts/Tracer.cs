@@ -7,6 +7,8 @@ public class Tracer : MonoBehaviour {
 	GameObject owner;
 	Rigidbody rb;
 	float timer;
+	const float knockback = 100.0f;
+	const int damage = 2;
 	[SerializeField] float lifetime;
 	// Use this for initialization
 	void Start() {
@@ -25,7 +27,27 @@ public class Tracer : MonoBehaviour {
 		}
 	}
 
+	void Recycle() {
+		rb.velocity = Vector3.zero;
+		timer = 0.0f;
+		this.gameObject.SetActive(false);
+	}
+
 	public void SetOwner(GameObject owner) {
 		this.owner = owner;
+	}
+
+	void OnTriggerEnter(Collider other) {
+		if (other.gameObject.layer == 11 && other.gameObject != owner)
+		{
+			Avatar avatar = other.gameObject.GetComponent<Avatar>();
+			avatar.TakeHit(damage, 0.1f, 0.2f, transform.forward * knockback);
+			Recycle();
+		}
+		else if (other.gameObject.layer == 10)
+		{
+			Recycle();
+		}
+
 	}
 }
