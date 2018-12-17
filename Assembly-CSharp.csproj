@@ -120,7 +120,6 @@
      <None Include="Assets\Packs\JMO Assets\WarFX\Shaders\WFX_S Alpha-Diffuse TintColor.shader" />
      <None Include="Assets\Packs\ProCore\ProBuilder\Shader\pb_ScrollHighlight.shader" />
      <None Include="Assets\Packs\ProCore\ProBuilder\readme.txt" />
-     <None Include="Assets\Packs\Planets\shader\two_side_shader.shader" />
      <None Include="Assets\Packs\ProCore\ProBuilder\Shader\pb_SmoothingPreview.shader" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
