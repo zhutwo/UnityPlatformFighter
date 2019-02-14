@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class GamepadInputManager : InputManager {
 
-	InputScheme scheme = InputScheme.TWINSTICK;
+
 }

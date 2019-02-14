@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class MouseInputManager : InputManager {
 
-	InputScheme scheme = InputScheme.KBMOUSE;
 	Plane mousePlane;
 	Vector3 mousePosition;
 	Ray ray;
+
+	public override AxesInfo spcAxes {
+		get { return aimAxes; }
+	}
+
+	public override AxesInfo cStick {
+		get { return aimAxes; }
+	}
 
 	void OnDrawGizmos() {
 		mousePlane = new Plane(Vector3.back, transform.position);
@@ -25,13 +32,17 @@ public class MouseInputManager : InputManager {
 		mousePlane = new Plane(Vector3.back, transform.position);
 	}
 
-	public override Vector2 GetAimAxes() {
+	protected override void UpdateAimAxes() {
 		CheckMousePosition();
-		return aimAxes;
 	}
 
-	public override Vector2 GetSpecialAxes() {
-		return aimAxes;
+	public override void UpdateAxes() {
+		base.UpdateMoveAxes();
+		UpdateAimAxes();
+	}
+
+	protected override void UpdateInfo(ref AxesInfo axes) {
+		// to do
 	}
 
 	void CheckMousePosition() {
@@ -42,8 +53,9 @@ public class MouseInputManager : InputManager {
 			mousePosition = ray.GetPoint(enter);
 		}
 		mousePosition -= transform.position;
+		mousePosition.z = 0.0f;
+		mousePosition.Normalize();
 		aimAxes.x = mousePosition.x;
 		aimAxes.y = mousePosition.y;
-		aimAxes.Normalize();
 	}
 }

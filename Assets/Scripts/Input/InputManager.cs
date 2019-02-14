@@ -2,121 +2,192 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Button {
+	ATTACK,
+	SHOOT,
+	DEFEND,
+	SPECIAL,
+	JUMP,
+	RELOAD,
+	SWAP,
+	TAUNT
+}
+
+public struct AxesInfo {
+
+	public enum Direction {
+		NONE,
+		UP,
+		DOWN,
+		RIGHT,
+		LEFT,
+		NULL
+	}
+
+	public float x;
+	public float y;
+	public Direction direction;
+	public int tiltLevel;
+
+	public Vector2 asVector {
+		get { return new Vector2(x, y); }
+	}
+}
+
 // base input manager class
 public class InputManager : MonoBehaviour {
 
-	protected Vector2 moveAxes;
-	protected Vector2 aimAxes;
+	public enum InputScheme {
+		CLASSIC,
+		TWINSTICK,
+		KBMOUSE
+	}
 
-	public virtual Vector2 GetMoveAxes() {
+	const float AXIS_TILT_THRESHOLD = 0.5f;
+
+	public AxesInfo moveAxes;
+	public AxesInfo aimAxes;
+
+	public virtual AxesInfo spcAxes {
+		get { return moveAxes; }
+	}
+
+	public virtual AxesInfo cStick {
+		get { return aimAxes; }
+	}
+
+	protected void UpdateMoveAxes() {
 		moveAxes.x = Input.GetAxis("Move X");
 		moveAxes.y = Input.GetAxis("Move Y");
-		return moveAxes;
 	}
 
-	public virtual Vector2 GetAimAxes() {
+	protected virtual void UpdateAimAxes() {
 		aimAxes.x = Input.GetAxis("Aim X");
 		aimAxes.y = Input.GetAxis("Aim Y");
-		return aimAxes;
 	}
 
-	/// <summary>
-	/// Must be called last after GetMoveAxes() and GetAimAxes()
-	/// </summary>
-	public virtual Vector2 GetSpecialAxes() {
-		return moveAxes;
+	protected virtual void UpdateInfo(ref AxesInfo axes) {
+		axes.tiltLevel = 0;
+		axes.direction = AxesInfo.Direction.NONE;
+		if (axes.x != 0.0f || axes.y != 0.0f)
+		{
+			if (Mathf.Abs(axes.x) > Mathf.Abs(axes.y)) // x is dominant axis
+			{
+				if (Mathf.Abs(axes.x) > AXIS_TILT_THRESHOLD)
+				{
+					axes.tiltLevel = 2;
+				}
+				else
+				{
+					axes.tiltLevel = 1;
+				}
+				if (axes.x > 0.0f)
+				{
+					axes.direction = AxesInfo.Direction.RIGHT;
+				}
+				else
+				{
+					axes.direction = AxesInfo.Direction.LEFT;
+				}
+			}
+			else // y is dominant axis
+			{
+				if (Mathf.Abs(axes.y) > AXIS_TILT_THRESHOLD)
+				{
+					axes.tiltLevel = 2;
+				}
+				else
+				{
+					axes.tiltLevel = 1;
+				}
+				if (axes.y > 0.0f)
+				{
+					axes.direction = AxesInfo.Direction.UP;
+				}
+				else
+				{
+					axes.direction = AxesInfo.Direction.DOWN;
+				}
+			}
+		}
+	}
+
+	public virtual void UpdateAxes() {
+		UpdateMoveAxes();
+		UpdateAimAxes();
+		UpdateInfo(ref moveAxes);
+		UpdateInfo(ref aimAxes);
 	}
 
 	public virtual bool GetButtonDown(Button button) {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetKeyDown("Attack");
-			break;
+			return Input.GetButtonDown("Attack");
 		case Button.SHOOT:
-			return Input.GetKeyDown("Shoot");
-			break;
+			return Input.GetButtonDown("Shoot");
 		case Button.DEFEND:
-			return Input.GetKeyDown("Defend");
-			break;
+			return Input.GetButtonDown("Defend");
 		case Button.SPECIAL:
-			return Input.GetKeyDown("Special");
-			break;
+			return Input.GetButtonDown("Special");
 		case Button.JUMP:
-			return Input.GetKeyDown("Jump");
-			break;
+			return Input.GetButtonDown("Jump");
 		case Button.RELOAD:
-			return Input.GetKeyDown("Reload");
-			break;
+			return Input.GetButtonDown("Reload");
 		case Button.SWAP:
-			return Input.GetKeyDown("Swap");
-			break;
+			return Input.GetButtonDown("Swap");
 		case Button.TAUNT:
-			return Input.GetKeyDown("Taunt");
-			break;
+			return Input.GetButtonDown("Taunt");
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	public virtual bool GetButtonHeld(Button button) {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetKey("Attack");
-			break;
+			return Input.GetButton("Attack");
 		case Button.SHOOT:
-			return Input.GetKeyUp("Shoot");
-			break;
+			return Input.GetButton("Shoot");
 		case Button.DEFEND:
-			return Input.GetKey("Defend");
-			break;
+			return Input.GetButton("Defend");
 		case Button.SPECIAL:
-			return Input.GetKey("Special");
-			break;
+			return Input.GetButton("Special");
 		case Button.JUMP:
-			return Input.GetKey("Jump");
-			break;
+			return Input.GetButton("Jump");
 		case Button.RELOAD:
-			return Input.GetKey("Reload");
-			break;
+			return Input.GetButton("Reload");
 		case Button.SWAP:
-			return Input.GetKey("Swap");
-			break;
+			return Input.GetButton("Swap");
 		case Button.TAUNT:
-			return Input.GetKey("Taunt");
-			break;
+			return Input.GetButton("Taunt");
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	public virtual bool GetButtonUp(Button button) {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetKeyUp("Attack");
-			break;
+			return Input.GetButtonUp("Attack");
 		case Button.SHOOT:
-			return Input.GetKeyUp("Shoot");
-			break;
+			return Input.GetButtonUp("Shoot");
 		case Button.DEFEND:
-			return Input.GetKeyUp("Defend");
-			break;
+			return Input.GetButtonUp("Defend");
 		case Button.SPECIAL:
-			return Input.GetKeyUp("Special");
-			break;
+			return Input.GetButtonUp("Special");
 		case Button.JUMP:
-			return Input.GetKeyUp("Jump");
-			break;
+			return Input.GetButtonUp("Jump");
 		case Button.RELOAD:
-			return Input.GetKeyUp("Reload");
-			break;
+			return Input.GetButtonUp("Reload");
 		case Button.SWAP:
-			return Input.GetKeyUp("Swap");
-			break;
+			return Input.GetButtonUp("Swap");
 		case Button.TAUNT:
-			return Input.GetKeyUp("Taunt");
-			break;
+			return Input.GetButtonUp("Taunt");
+		default:
+			return false;
 		}
-		return false;
 	}
 }

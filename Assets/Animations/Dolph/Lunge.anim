@@ -23233,14 +23233,14 @@ AnimationClip:
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
-    intParameter: 12
+    intParameter: 13
     messageOptions: 0
   - time: 0.56666666
     functionName: DeactivateHitbox
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
-    intParameter: 12
+    intParameter: 13
     messageOptions: 0
   - time: 0.5833333
     functionName: ExitSpecial

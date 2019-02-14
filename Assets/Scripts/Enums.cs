@@ -1,24 +1,7 @@
-﻿public enum InputScheme {
-	CLASSIC,
-	TWINSTICK,
-	KBMOUSE
-}
-
-public enum Button {
-	ATTACK,
-	SHOOT,
-	DEFEND,
-	SPECIAL,
-	JUMP,
-	RELOAD,
-	SWAP,
-	TAUNT
-}
-
-public enum State {
+﻿public enum State {
 	IDLE,
-	RUNFWD,
-	RUNBACK,
+	WALKFWD,
+	WALKBACK,
 	CROUCH,
 	AIRIDLE,
 	ATTACK,
@@ -32,25 +15,13 @@ public enum State {
 	GROUNDSTUN,
 	COMBO,
 	ROLL,
-	TECH
+	TECH,
+	DASH,
+	RUN,
+	RUNSTOP,
+	RUNTURN
 }
-
-public enum Move {
-	FTILT,
-	DTILT,
-	UTILT1,
-	UTILT2,
-	JAB1,
-	JAB2,
-	JAB3,
-	DASHATK,
-	NAIR,
-	FAIR,
-	UAIR,
-	DAIR,
-	SPECIAL
-}
-
+	
 public enum Weapon {
 	MELEE,
 	RANGED

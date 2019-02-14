@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Avatar : MonoBehaviour {
 
-	const float X_AXIS_TILT_THRESHOLD = 0.25f;
-	const float Y_AXIS_TILT_THRESHOLD = 0.25f;
+	const float AXIS_TILT_THRESHOLD = 0.5f;
 	const float TORSO_ROTATION_OFFSET = 35.0f;
 	const float SHOT_MOMENTUM_TRANSFER_RATIO = 0.5f;
 	const float SHOTGUN_VELOCITY_DRIFT_LIMIT = 0.8f;
@@ -21,9 +20,6 @@ public class Avatar : MonoBehaviour {
 	AudioSource audio;
 	GameObject[,] tracers;
 
-	Vector2 moveAxes;
-	Vector2 aimAxes;
-	Vector2 specialAxes;
 	Vector3 specialVector;
 	Vector3 specialDestination;
 	Vector3 tempVec;
@@ -41,6 +37,7 @@ public class Avatar : MonoBehaviour {
 	float freezeTimer;
 
 	bool groundCheck;
+	bool applyGroundMotion = false;
 	bool isGrounded = true;
 	bool isHitstun = false;
 	bool isActionable = true;
@@ -79,13 +76,14 @@ public class Avatar : MonoBehaviour {
 	[SerializeField] GameObject headRotationBone;
 
 	[Header("MoveProperties")]
-	[SerializeField] float rangedSpeedMulti;
-	[SerializeField] float runFwdSpeed;
-	[SerializeField] float runBackSpeed;
-	[SerializeField] float crouchWalkSpeed;
+	[SerializeField] float dashSpeed;
+	[SerializeField] float runSpeed;
+	[SerializeField] float walkSpeed;
+	[SerializeField] float crawlSpeed;
 	[SerializeField] float airDriftSpeed;
 	[SerializeField] float airDriftAccel;
-	[SerializeField] float slideDampingFactor;
+	[SerializeField] float airFriction;
+	[SerializeField] float groundTraction;
 
 	[Header("JumpProperties")]
 	[SerializeField] float fullHopSpeed;
@@ -165,37 +163,22 @@ public class Avatar : MonoBehaviour {
 		meter = MAX_METER;
 		startRotation = hipRotationBone.transform.rotation;
 	}
-	
-	// Update is called once per frame
+
 	void Update() {
 		if (control)
 		{
-			AxisInput();
+			input.UpdateAxes();
 			ComboLink();
 			if (isActionable)
 			{
-				TurnAround();
-				//AimRotation();
+				AimRotation();
+				if (isGrounded)
+				{
+					MovementInput();
+				}
 				ActionInput();
 			}
 		}
-		if (!specialMovement)
-		{
-			ApplyPhysics();
-			GroundCheck();
-			if (!isHitstun)
-			{
-				Move();
-			}
-		}
-		else // if special movement
-		{
-			//rb.velocity = specialVector * specialSpeed;
-		}
-		RunTimers();
-	}
-
-	void FixedUpdate() {
 		if (specialMovement)
 		{
 			GameObject illusion = Instantiate(illusionPrefab, transform.position, transform.rotation);
@@ -203,9 +186,12 @@ public class Avatar : MonoBehaviour {
 		}
 		else
 		{
-			//ApplyPhysics();
-			//GroundCheck();
-			//Move();
+			ApplyPhysics();
+			GroundCheck();
+			if (!isHitstun)
+			{
+				Move();
+			}
 		}
 		if (meter < MAX_METER)
 		{
@@ -220,6 +206,7 @@ public class Avatar : MonoBehaviour {
 			Instantiate(trailPrefab, transform.position, transform.rotation);
 		}
 		UpdateUI();
+		RunTimers();
 	}
 
 	void LateUpdate() {
@@ -232,39 +219,272 @@ public class Avatar : MonoBehaviour {
 	void AimRotation() {
 		if (currentWeapon == Weapon.RANGED)
 		{
-			if (aimAxes.x == 0.0f && aimAxes.y == 0.0f)
+			if (input.aimAxes.x == 0.0f && input.aimAxes.y == 0.0f)
 			{
 				lookDirection = transform.forward;
 				lookRotation = Quaternion.LookRotation(lookDirection);
 			}
 			else
 			{
-				lookDirection = new Vector3(aimAxes.x, aimAxes.y, 0.0f);
+				lookDirection = new Vector3(input.aimAxes.x, input.aimAxes.y, 0.0f);
 				lookRotation = Quaternion.LookRotation(lookDirection);
+				if (input.aimAxes.x > 0.0f)
+				{
+					transform.eulerAngles = new Vector3(0.0f, 90.0f, 0.0f);
+					anim.SetFloat("LookDirection", transform.forward.x);
+				}
+				else if (input.aimAxes.x < 0.0f)
+				{
+					transform.eulerAngles = new Vector3(0.0f, -90.0f, 0.0f);
+					anim.SetFloat("LookDirection", transform.forward.x);
+				}
 			}
 		}
 	}
 
 	void TurnAround() {
-		float direction = transform.forward.x;
-		switch (currentWeapon)
-		{
-		case Weapon.MELEE:
-			direction = moveAxes.x;
-			break;
-		case Weapon.RANGED:
-			direction = aimAxes.x;
-			break;
-		}
-		if (direction > 0.0f)
+		if (transform.forward.x < 0.0f)
 		{
 			transform.eulerAngles = new Vector3(0.0f, 90.0f, 0.0f);
-			anim.SetFloat("lookDirection", transform.forward.x);
 		}
-		else if (direction < 0.0f)
+		else
 		{
 			transform.eulerAngles = new Vector3(0.0f, -90.0f, 0.0f);
-			anim.SetFloat("lookDirection", transform.forward.x);
+		}
+		anim.SetFloat("LookDirection", transform.forward.x);
+	}
+
+	void ActionInput() {
+		if (input.GetButtonDown(Button.JUMP))
+		{
+			if (hasDoubleJump)
+			{
+				TriggerOneFrame("JumpTrigger");
+			}
+		}
+		if (input.cStick.tiltLevel == 2)
+		{
+			if (currentWeapon == Weapon.MELEE)
+			{
+				TriggerOneFrame("AttackTrigger", input.cStick.direction);
+			}
+		}
+		else if (input.GetButtonDown(Button.ATTACK))
+		{
+			if (currentWeapon == Weapon.RANGED)
+			{
+				TriggerOneFrame("ShotTrigger");
+				FireWeapon();
+			}
+			else
+			{
+				TriggerOneFrame("AttackTrigger", input.moveAxes.direction);
+			}
+		}
+		else if (input.GetButtonDown(Button.DEFEND))
+		{
+			if (isGrounded && currentWeapon == Weapon.MELEE)
+			{
+				TriggerOneFrame("DefendTrigger", input.moveAxes.direction);
+			}
+		}
+		else if (input.GetButtonDown(Button.SPECIAL))
+		{
+			if (currentWeapon == Weapon.MELEE && meter >= meterCost)
+			{
+				TriggerOneFrame("SpecialTrigger");
+			}
+		}
+		else if (input.GetButtonDown(Button.SWAP))
+		{
+			ChangeWeapon();
+		}
+		else if (input.GetButtonDown(Button.RELOAD))
+		{
+			Reload();
+		}
+	}
+
+	void MovementInput() {
+		SetAnimStickDirection(input.moveAxes.direction);
+		SetAnimTiltLevel(input.moveAxes.tiltLevel);
+		switch (currentState)
+		{
+		case (State.DASH):
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (!DirectionSameAsInput(input.moveAxes))
+				{
+					TriggerOneFrame("IdleTrigger");
+					TurnAround();
+				}
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			default:
+				break;
+			}
+			break;
+		case (State.RUN):
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (!DirectionSameAsInput(input.moveAxes))
+				{
+					TriggerOneFrame("RunTurnTrigger");
+				}
+				break;
+			case (AxesInfo.Direction.DOWN):
+				if (input.moveAxes.tiltLevel == 2)
+				{
+					TriggerOneFrame("CrouchTrigger");
+				}
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			case (AxesInfo.Direction.NONE):
+				TriggerOneFrame("RunStopTrigger");
+				break;
+			default:
+				break;
+			}
+			break;
+		case (State.WALKFWD):
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (!DirectionSameAsInput(input.moveAxes))
+				{
+					TriggerOneFrame("IdleTrigger");
+					TurnAround();
+				}
+				break;
+			case (AxesInfo.Direction.DOWN):
+				if (input.moveAxes.tiltLevel == 2)
+				{
+					TriggerOneFrame("CrouchTrigger");
+				}
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			case (AxesInfo.Direction.NONE):
+				TriggerOneFrame("IdleTrigger");
+				break;
+			default:
+				break;
+			}
+			break;
+		case (State.CROUCH):
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (DirectionSameAsInput(input.moveAxes))
+				{
+					if (input.moveAxes.tiltLevel == 2)
+					{
+						TriggerOneFrame("DashTrigger");
+					}
+					else
+					{
+						TriggerOneFrame("WalkTrigger");
+					}
+				}
+				else
+				{
+					TriggerOneFrame("IdleTrigger");
+					TurnAround();
+				}
+				break;
+			case (AxesInfo.Direction.NONE):
+				TriggerOneFrame("IdleTrigger");
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			default:
+				break;
+			}
+			break;
+		case (State.IDLE):
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (DirectionSameAsInput(input.moveAxes))
+				{
+					if (input.moveAxes.tiltLevel == 2)
+					{
+						TriggerOneFrame("DashTrigger");
+					}
+					else
+					{
+						TriggerOneFrame("WalkTrigger");
+					}
+				}
+				else
+				{
+					TurnAround();
+				}
+				break;
+			case (AxesInfo.Direction.DOWN):
+				if (input.moveAxes.tiltLevel == 2)
+				{
+					TriggerOneFrame("CrouchTrigger");
+				}
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			default:
+				break;
+			}
+			break;
+		case (State.RUNSTOP):
+		case (State.RUNTURN):
+			break;
+		default:
+			switch (input.moveAxes.direction)
+			{
+			case (AxesInfo.Direction.LEFT):
+			case (AxesInfo.Direction.RIGHT):
+				if (DirectionSameAsInput(input.moveAxes))
+				{
+					if (input.moveAxes.tiltLevel == 2)
+					{
+						TriggerOneFrame("DashTrigger");
+					}
+					else
+					{
+						TriggerOneFrame("WalkTrigger");
+					}
+				}
+				else
+				{
+					TriggerOneFrame("IdleTrigger");
+					TurnAround();
+				}
+				break;
+			case (AxesInfo.Direction.DOWN):
+				if (input.moveAxes.tiltLevel == 2)
+				{
+					TriggerOneFrame("CrouchTrigger");
+				}
+				break;
+			case (AxesInfo.Direction.UP):
+				// jump if tap jump
+				break;
+			default:
+				break;
+			}
+			break;
 		}
 	}
 
@@ -276,129 +496,24 @@ public class Avatar : MonoBehaviour {
 		}
 	}
 
-	void AxisInput() {
-		moveAxes = input.GetMoveAxes();
-		aimAxes = input.GetAimAxes();
-		specialAxes = input.GetSpecialAxes();
-		anim.SetFloat("xAxis", moveAxes.x);
-		anim.SetFloat("yAxis", moveAxes.y);
-	}
-
-	void ActionInput() {
-		if (Input.GetButtonDown("Jump"))
-		{
-			if (hasDoubleJump)
-			{
-				anim.SetTrigger("JumpTrigger");
-			}
-		}
-		else if (Input.GetButtonDown("Attack"))
-		{
-			if (currentWeapon == Weapon.RANGED)
-			{
-				anim.SetTrigger("shotTrigger");
-				FireWeapon();
-			}
-			else if (isGrounded)
-			{
-				switch (currentState)
-				{
-				case (State.RUNFWD):
-					if (moveAxes.y > Y_AXIS_TILT_THRESHOLD)
-					{
-						anim.SetTrigger("uTiltTrigger");
-					}
-					else if (moveAxes.y < -Y_AXIS_TILT_THRESHOLD)
-					{
-						anim.SetTrigger("dTiltTrigger");
-					}
-					else
-					{
-						anim.SetTrigger("dashAttackTrigger");
-					}
-					break;
-				case (State.RUNBACK):
-					anim.SetTrigger("fTiltTrigger");
-					break;
-				case (State.CROUCH):
-					anim.SetTrigger("dTiltTrigger");
-					break;
-				case (State.IDLE):
-					if (moveAxes.y > Y_AXIS_TILT_THRESHOLD)
-					{
-						anim.SetTrigger("uTiltTrigger");
-					}
-					else
-					{
-						anim.SetTrigger("jabTrigger");
-					}
-					break;
-				default:
-					break;
-				}
-			}
-			else // aerial attacks
-			{
-				if (moveAxes.y > Y_AXIS_TILT_THRESHOLD)
-				{
-					anim.SetTrigger("upairTrigger");
-				}
-				else if (moveAxes.y < -Y_AXIS_TILT_THRESHOLD)
-				{
-					anim.SetTrigger("dairTrigger");
-				}
-				else if (moveAxes.x * transform.forward.x > X_AXIS_TILT_THRESHOLD)
-				{
-					anim.SetTrigger("fairTrigger");
-				}
-				else
-				{
-					anim.SetTrigger("nairTrigger");
-				}
-			}
-		}
-		else if (Input.GetButtonDown("Defend"))
-		{
-			if (isGrounded && currentWeapon == Weapon.MELEE)
-			{
-				if (currentState == State.RUNFWD)
-				{
-					anim.SetTrigger("FwdRollTrigger");
-				}
-				else if (currentState == State.RUNBACK)
-				{
-					anim.SetTrigger("BackRollTrigger");
-				}
-				else
-				{
-					anim.SetTrigger("defendTrigger");
-				}
-			}
-		}
-		else if (Input.GetButtonDown("Special"))
-		{
-			if (currentWeapon == Weapon.MELEE && meter >= meterCost)
-			{
-				anim.SetTrigger("specialTrigger");
-			}
-		}
-		else if (Input.GetButtonDown("Swap"))
-		{
-			ChangeWeapon();
-		}
-		else if (Input.GetButtonDown("Reload"))
-		{
-			Reload();
-		}
-	}
-
 	void ComboLink() {
 		if (currentState == State.COMBO)
 		{
-			if (Input.GetButtonDown("Attack"))
+			if (input.GetButtonDown(Button.ATTACK))
 			{
 				anim.SetBool("LinkCombo", true);
 			}
+		}
+	}
+
+	bool DirectionSameAsInput(AxesInfo axes) {
+		if (axes.x * transform.forward.x > 0.0f)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
@@ -424,14 +539,23 @@ public class Avatar : MonoBehaviour {
 	void AddFriction() {
 		if (rb.velocity.x != 0.0f)
 		{
-			tempVec = rb.velocity;
-			tempVec.x *= Mathf.Pow(slideDampingFactor, Time.deltaTime);
-			if (Mathf.Abs(tempVec.x) < 0.001f)
+			if (Mathf.Abs(rb.velocity.x) - groundTraction * Time.deltaTime <= 0.0f)
 			{
+				tempVec = rb.velocity;
 				tempVec.x = 0.0f;
+				rb.velocity = tempVec;
 			}
-			rb.velocity = tempVec;
+			else
+			{
+				rb.velocity -= groundTraction * Mathf.Sign(rb.velocity.x) * Vector3.right * Time.deltaTime;
+			}
 		}
+	}
+
+	void TransferLandingMomentum() {
+		tempVec = rb.velocity;
+		tempVec.y = 0.0f;
+		rb.velocity = tempVec;
 	}
 
 	void GroundCheck() {
@@ -446,7 +570,7 @@ public class Avatar : MonoBehaviour {
 					if (wasTechPressed && techTimer > 0.0f)
 					{
 						isHitstun = false;
-						anim.SetTrigger("TechTrigger");
+						TriggerOneFrame("TechTrigger");
 					}
 					else
 					{
@@ -455,7 +579,7 @@ public class Avatar : MonoBehaviour {
 							
 						}
 						isHitstun = false;
-						anim.SetTrigger("MissedTechTrigger");
+						TriggerOneFrame("MissedTechTrigger");
 					}
 				}
 				else
@@ -463,17 +587,18 @@ public class Avatar : MonoBehaviour {
 					
 					if (currentState == State.AERIAL)
 					{
-						anim.SetTrigger("HardLandTrigger");
+						TriggerOneFrame("HardLandTrigger");
 					}
 					
 					if (rb.velocity.y < -hardLandThresholdSpeed)
 					{
-						anim.SetTrigger("HardLandTrigger");
+						TriggerOneFrame("HardLandTrigger");
 					}
 					else
 					{
-						anim.SetTrigger("SoftLandTrigger");
+						TriggerOneFrame("SoftLandTrigger");
 					}
+					TransferLandingMomentum();
 				}
 			}
 		}
@@ -482,7 +607,7 @@ public class Avatar : MonoBehaviour {
 			// if walked off platform
 			if (isGrounded)
 			{
-				anim.SetTrigger("AirIdleTrigger");
+				TriggerOneFrame("AirIdleTrigger");
 			}
 		}
 	}
@@ -518,11 +643,10 @@ public class Avatar : MonoBehaviour {
 	void EndFreezeFrame() {
 		isFreezeFrame = false;
 		anim.speed = 1.0f;
-		rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
-		if (isHitstun)
+		rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; //reset constraints to normal
+		if (currentState == State.TUMBLE)
 		{
 			rb.velocity = knockbackToApply / 8.0f;
-
 			techTimer = 0.0f;
 			wasTechPressed = false;
 		}
@@ -536,14 +660,14 @@ public class Avatar : MonoBehaviour {
 		knockbackToApply = knockback;
 		if (knockback.y < GROUND_STUN_THRESHOLD)
 		{
+			ChangeState(State.GROUNDSTUN);
 			stunTimer *= 0.5f;
-			knockbackToApply = Vector3.zero;
-			anim.SetTrigger("GroundStunTrigger");
+			TriggerOneFrame("GroundStunTrigger");
 		}
 		else
 		{
 			ChangeState(State.TUMBLE);
-			anim.SetTrigger("TumbleTrigger");
+			TriggerOneFrame("TumbleTrigger");
 			isGrounded = false;
 			hipRotationBone.transform.rotation = Quaternion.LookRotation(-knockback, Vector3.up);
 		}
@@ -558,52 +682,52 @@ public class Avatar : MonoBehaviour {
 	void Move() {
 		if (isGrounded && isActionable)
 		{
-			tempVec = rb.velocity;
-			if (isCrouch)
-			{
-				tempVec.x = moveAxes.x * crouchWalkSpeed;
-			}
-			else
-			{
-				if (transform.forward.x * moveAxes.x > 0.0f)
-				{
-					if (currentWeapon == Weapon.MELEE)
-					{
-						tempVec.x = moveAxes.x * runFwdSpeed;
-						anim.SetFloat("runSpeed", 1.0f);
-					}
-					else
-					{
-						tempVec.x = moveAxes.x * runFwdSpeed * rangedSpeedMulti;
-						anim.SetFloat("runSpeed", rangedSpeedMulti);
-					}
-
-				}
-				else
-				{
-					tempVec.x = moveAxes.x * runBackSpeed;
-				}
-			}
-			rb.velocity = tempVec;
+			ApplyGroundMotion();
 		}
 		else if (!isGrounded && currentState != State.TUMBLE) // airborne
 		{
-			// aerial drift
-			tempVec = rb.velocity;
-			if (tempVec.x < airDriftSpeed || tempVec.x > -airDriftSpeed)
+			ApplyAirMotion();
+		}
+	}
+
+	void ApplyGroundMotion() {
+		
+		switch (currentState)
+		{
+		case (State.DASH):
+		case (State.DASHATTACK):
+			rb.velocity = dashSpeed * transform.forward;
+			break;
+		case (State.RUN):
+			rb.velocity = runSpeed * transform.forward;
+			break;
+		case (State.WALKFWD):
+			rb.velocity = walkSpeed * transform.forward;
+			break;
+		case (State.WALKBACK):
+			rb.velocity = -walkSpeed * transform.forward;
+			break;
+		default:
+			break;
+		}
+	}
+
+	void ApplyAirMotion() {
+		// aerial drift
+		tempVec = rb.velocity;
+		if (tempVec.x < airDriftSpeed || tempVec.x > -airDriftSpeed)
+		{
+			tempVec.x += input.moveAxes.x * airDriftAccel * Time.deltaTime;
+		}
+		rb.velocity = tempVec;
+		// fast fall
+		if (input.moveAxes.y < -AXIS_TILT_THRESHOLD)
+		{
+			if (rb.velocity.y < 0.0f && rb.velocity.y > -fastFallSpeed)
 			{
-				tempVec.x += moveAxes.x * airDriftAccel * Time.deltaTime;
-			}
-			rb.velocity = tempVec;
-			// fast fall
-			if (moveAxes.y < -Y_AXIS_TILT_THRESHOLD)
-			{
-				if (rb.velocity.y < 0.0f && rb.velocity.y > -fastFallSpeed)
-				{
-					tempVec = rb.velocity;
-					tempVec.y = -fastFallSpeed;
-					rb.velocity = tempVec;
-				}
+				tempVec = rb.velocity;
+				tempVec.y = -fastFallSpeed;
+				rb.velocity = tempVec;
 			}
 		}
 	}
@@ -611,7 +735,7 @@ public class Avatar : MonoBehaviour {
 	// called by animation event at end of JumpSquat
 	void AddJumpForce() {
 		// performs full hop if player is still holding jump at end of jump squat animation
-		if (Input.GetButton("Jump"))
+		if (input.GetButtonHeld(Button.JUMP))
 		{
 			rb.velocity += transform.up * fullHopSpeed;
 		}
@@ -627,7 +751,7 @@ public class Avatar : MonoBehaviour {
 		tempVec = rb.velocity;
 		tempVec.y = doubleJumpSpeed;
 		// add aerial drift if player is holding direction
-		tempVec.x = moveAxes.x * airDriftSpeed;
+		tempVec.x = input.moveAxes.x * airDriftSpeed;
 		rb.velocity = tempVec;
 		hasDoubleJump = false;
 	}
@@ -636,12 +760,46 @@ public class Avatar : MonoBehaviour {
 
 	#region AnimTools
 
+	void TriggerOneFrame(string trigger, AxesInfo.Direction direction = AxesInfo.Direction.NULL) {
+		if (direction != AxesInfo.Direction.NULL)
+		{
+			SetAnimStickDirection(direction);
+		}
+		StartCoroutine(TriggerOneFrameCoroutine(trigger));
+	}
+
+	void SetAnimStickDirection(AxesInfo.Direction direction) {
+		if (transform.forward.x < 0.0f)
+		{
+			if (direction == AxesInfo.Direction.RIGHT)
+			{
+				direction = AxesInfo.Direction.LEFT;
+			}
+			else if (direction == AxesInfo.Direction.LEFT)
+			{
+				direction = AxesInfo.Direction.RIGHT;
+			}
+		}
+		anim.SetInteger("StickDirection", (int)direction);
+	}
+
+	void SetAnimTiltLevel(int tilt) {
+		anim.SetInteger("TiltLevel", tilt);
+	}
+
+	IEnumerator TriggerOneFrameCoroutine(string trigger) {
+		anim.SetTrigger(trigger);
+		yield return null;
+		if (anim != null)
+		{
+			anim.ResetTrigger(trigger);
+		}
+	}
+
 	void SetActionable(int i) {
 		if (i == 0)
 		{
 			isActionable = false;
-			anim.SetFloat("xAxis", 0.0f);
-			anim.SetFloat("yAxis", 0.0f);
 		}
 		else if (i == 1)
 		{
@@ -671,31 +829,10 @@ public class Avatar : MonoBehaviour {
 				hasDoubleJump = true;
 			}
 			isGrounded = true;
-			if (newState == State.CROUCH)
-			{
-				isCrouch = true;
-			}
-			else
-			{
-				isCrouch = false;
-			}
-
 		}
-		if (newState == State.ATTACK || newState == State.DASHATTACK || newState == State.SPECIAL || newState == State.DEFEND || newState == State.AERIAL || newState == State.LANDLAG || newState == State.TUMBLE || newState == State.GROUNDSTUN || newState == State.COMBO)
+		if (newState == State.ATTACK || newState == State.DASHATTACK || newState == State.SPECIAL || newState == State.AERIAL || newState == State.LANDLAG || newState == State.TUMBLE || newState == State.GROUNDSTUN || newState == State.COMBO)
 		{
 			isActionable = false;
-			/*
-			if (newState != State.AERIAL || newState != State.TUMBLE)
-			{
-				anim.SetFloat("xAxis", 0.0f);
-				anim.SetFloat("yAxis", 0.0f);
-			}
-			*/
-			if (newState == State.DASHATTACK)
-			{
-				// change this to non force
-				rb.AddForce(transform.forward * 20.0f, ForceMode.Impulse);
-			}
 		}
 		else
 		{
@@ -740,7 +877,14 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void StartSpecial() {
-		specialVector = new Vector3(specialAxes.x, specialAxes.y, 0.0f);
+		if (input.spcAxes.x == 0.0f && input.spcAxes.y == 0.0f)
+		{
+			specialVector = transform.forward;
+		}
+		else
+		{
+			specialVector = new Vector3(input.spcAxes.x, input.spcAxes.y, 0.0f);
+		}
 		if (isGrounded && specialVector.y < 0.0f)
 		{
 			specialVector.y = 0.0f;
@@ -760,22 +904,22 @@ public class Avatar : MonoBehaviour {
 		groundCheck = Physics.CheckSphere(groundCheckPoint.position, groundCheckRadius, groundLayer);
 		if (groundCheck)
 		{
-			rb.velocity = Vector3.zero;
 			isGrounded = true;
 			if (specialVector.y < -0.2f)
 			{
-				anim.SetTrigger("HardLandTrigger");
+				TriggerOneFrame("HardLandTrigger");
 			}
 			else
 			{
-				anim.SetTrigger("SoftLandTrigger");
+				TriggerOneFrame("SoftLandTrigger");
 			}
+			TransferLandingMomentum();
 		}
 		else
 		{
 			rb.velocity = specialVector * (airDriftSpeed / 2.0f);
 			isGrounded = false;
-			anim.SetTrigger("AirIdleTrigger");
+			TriggerOneFrame("AirIdleTrigger");
 		}
 	}
 
@@ -881,11 +1025,11 @@ public class Avatar : MonoBehaviour {
 				isHitstun = false;
 				if (currentState == State.TUMBLE)
 				{
-					anim.SetTrigger("AirIdleTrigger");
+					TriggerOneFrame("AirIdleTrigger");
 				}
 				else
 				{
-					anim.SetTrigger("GroundStunEndTrigger");
+					TriggerOneFrame("GroundStunEndTrigger");
 				}
 			}
 		}
@@ -925,7 +1069,7 @@ public class Avatar : MonoBehaviour {
 		meter = MAX_METER;
 		rb.transform.position = position;
 		currentState = State.IDLE;
-		anim.SetTrigger("AirIdleTrigger");
+		TriggerOneFrame("AirIdleTrigger");
 	}
 
 	#endregion

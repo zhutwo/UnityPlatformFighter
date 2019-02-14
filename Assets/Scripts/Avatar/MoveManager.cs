@@ -2,6 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Move {
+	FTILT,
+	DTILT,
+	UTILT1,
+	UTILT2,
+	JAB1,
+	JAB2,
+	JAB3,
+	DASHATK,
+	NAIR,
+	FAIR,
+	UAIR,
+	DAIR,
+	BAIR,
+	SPECIAL
+}
+
 // this class receives callbacks from animator and activates hitboxes on appropriate frames
 public class MoveManager : MonoBehaviour {
 
