@@ -14,6 +14,7 @@ public class Avatar : MonoBehaviour {
 	const int METER_CHARGE_RATE = 5;
 	const int METER_DAMAGE_RATIO = 5;
 
+	MoveManager movemgr;
 	InputManager input;
 	Animator anim;
 	Rigidbody rb;
@@ -23,7 +24,7 @@ public class Avatar : MonoBehaviour {
 	Vector3 specialVector;
 	Vector3 specialDestination;
 	Vector3 tempVec;
-	Vector3 oldVec;
+	Vector3 savedVelocity;
 	Vector3 lookDirection;
 	Vector3 knockbackToApply;
 	Quaternion startRotation;
@@ -142,6 +143,7 @@ public class Avatar : MonoBehaviour {
 
 	// Use this for initialization
 	void Start() {
+		movemgr = GetComponent<MoveManager>();
 		input = GetComponent<InputManager>();
 		anim = GetComponent<Animator>();
 		rb = GetComponent<Rigidbody>();
@@ -634,6 +636,7 @@ public class Avatar : MonoBehaviour {
 	}
 
 	public void StartFreezeFrame(float time) {
+		savedVelocity = rb.velocity;
 		freezeTimer = time;
 		isFreezeFrame = true;
 		anim.speed = 0.0f;
@@ -650,6 +653,10 @@ public class Avatar : MonoBehaviour {
 			techTimer = 0.0f;
 			wasTechPressed = false;
 		}
+		else
+		{
+			rb.velocity = savedVelocity;
+		}
 	}
 
 	public void TakeHit(int damage, float freezeTime, float stunTime, Vector3 knockback) {
@@ -658,10 +665,10 @@ public class Avatar : MonoBehaviour {
 		stunTimer = stunTime;
 		isHitstun = true;
 		knockbackToApply = knockback;
-		if (knockback.y < GROUND_STUN_THRESHOLD)
+		if (isGrounded && knockback.magnitude < GROUND_STUN_THRESHOLD)
 		{
 			ChangeState(State.GROUNDSTUN);
-			stunTimer *= 0.5f;
+			//stunTimer *= 0.5f;
 			TriggerOneFrame("GroundStunTrigger");
 		}
 		else
@@ -813,6 +820,10 @@ public class Avatar : MonoBehaviour {
 
 	void ChangeState(State newState) {
 
+		if (currentState == State.ATTACK || currentState == State.DASHATTACK || currentState == State.AERIAL || currentState == State.COMBO || currentState == State.SPECIAL)
+		{
+			movemgr.ResetHitboxes();
+		}
 		if (newState == State.SPECIAL)
 		{
 			specialStartup = true;

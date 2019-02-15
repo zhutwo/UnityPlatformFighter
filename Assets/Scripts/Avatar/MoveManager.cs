@@ -44,8 +44,11 @@ public class MoveManager : MonoBehaviour {
 
 		public float Direction { get { return direction; } }
 
-		public void SetActive(bool active, float direction) {
-			this.direction = direction;
+		public void SetActive(bool active, float direction = 0.0f) {
+			if (direction != 0.0f)
+			{
+				this.direction = direction;
+			}
 			for (int i = 0; i < colliders.Length; i++)
 			{
 				colliders[i].enabled = active;
@@ -71,7 +74,7 @@ public class MoveManager : MonoBehaviour {
 	}
 
 	[SerializeField] LayerMask targetLayer;
-	[SerializeField] Hitbox[] hitboxes = new Hitbox[13];
+	[SerializeField] Hitbox[] hitboxes = new Hitbox[14];
 
 	Avatar avatar;
 	Move activeMove;
@@ -93,11 +96,6 @@ public class MoveManager : MonoBehaviour {
 			// later get max players value
 		}
 	}
-	
-	// Update is called once per frame
-	void Update() {
-		
-	}
 
 	public void ActivateHitbox(Move move) {
 		activeMove = move;
@@ -105,7 +103,11 @@ public class MoveManager : MonoBehaviour {
 	}
 
 	public void DeactivateHitbox(Move move) {
-		hitboxes[(int)move].SetActive(false, transform.forward.x);
+		hitboxes[(int)move].SetActive(false);
+	}
+
+	public void ResetHitboxes() {
+		hitboxes[(int)activeMove].SetActive(false);
 	}
 
 	Vector3 CalculateKnockback(int damage, float direction, float angle, float baseKb, float kBscale, float enemydamage, float enemyweight, out float stunTime) {

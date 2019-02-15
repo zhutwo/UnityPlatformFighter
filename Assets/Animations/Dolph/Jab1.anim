@@ -20565,13 +20565,6 @@ AnimationClip:
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
-    intParameter: 6
-    messageOptions: 0
-  - time: 0.33333334
-    functionName: ChangeState
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
     intParameter: 14
     messageOptions: 0
   - time: 0.35

@@ -43,7 +43,7 @@ public class InputManager : MonoBehaviour {
 		KBMOUSE
 	}
 
-	const float AXIS_TILT_THRESHOLD = 0.5f;
+	const float AXIS_TILT_THRESHOLD = 0.25f;
 
 	public AxesInfo moveAxes;
 	public AxesInfo aimAxes;
