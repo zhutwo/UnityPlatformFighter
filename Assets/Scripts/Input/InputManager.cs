@@ -45,25 +45,47 @@ public class InputManager : MonoBehaviour {
 
 	const float AXIS_TILT_THRESHOLD = 0.25f;
 
-	public AxesInfo moveAxes;
-	public AxesInfo aimAxes;
+	[SerializeField] int playerIndex;
+	[SerializeField] string[] inputAlias = new string[12];
+
+	public AxesInfo leftAxes;
+	public AxesInfo rightAxes;
+
+	public virtual AxesInfo moveAxes {
+		get { return leftAxes; }
+	}
+
+	public virtual AxesInfo aimAxes {
+		get { return leftAxes; }
+	}
 
 	public virtual AxesInfo spcAxes {
-		get { return moveAxes; }
+		get { return leftAxes; }
 	}
 
 	public virtual AxesInfo cStick {
-		get { return aimAxes; }
+		get { return rightAxes; }
+	}
+
+	void Start() {
+		SetAlias();
+	}
+
+	void SetAlias() {
+		for (int i = 0; i < inputAlias.Length; i++)
+		{
+			inputAlias[i] = playerIndex.ToString() + inputAlias[i];
+		}
 	}
 
 	protected void UpdateMoveAxes() {
-		moveAxes.x = Input.GetAxis("Move X");
-		moveAxes.y = Input.GetAxis("Move Y");
+		leftAxes.x = Input.GetAxis(inputAlias[0]);
+		leftAxes.y = Input.GetAxis(inputAlias[1]);
 	}
 
 	protected virtual void UpdateAimAxes() {
-		aimAxes.x = Input.GetAxis("Aim X");
-		aimAxes.y = Input.GetAxis("Aim Y");
+		rightAxes.x = Input.GetAxis(inputAlias[2]);
+		rightAxes.y = Input.GetAxis(inputAlias[3]);
 	}
 
 	protected virtual void UpdateInfo(ref AxesInfo axes) {
@@ -115,29 +137,29 @@ public class InputManager : MonoBehaviour {
 	public virtual void UpdateAxes() {
 		UpdateMoveAxes();
 		UpdateAimAxes();
-		UpdateInfo(ref moveAxes);
-		UpdateInfo(ref aimAxes);
+		UpdateInfo(ref leftAxes);
+		UpdateInfo(ref rightAxes);
 	}
 
 	public virtual bool GetButtonDown(Button button) {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetButtonDown("Attack");
+			return Input.GetButtonDown(inputAlias[4]);
 		case Button.SHOOT:
-			return Input.GetButtonDown("Shoot");
+			return Input.GetButtonDown(inputAlias[5]);
 		case Button.DEFEND:
-			return Input.GetButtonDown("Defend");
+			return Input.GetButtonDown(inputAlias[6]);
 		case Button.SPECIAL:
-			return Input.GetButtonDown("Special");
+			return Input.GetButtonDown(inputAlias[7]);
 		case Button.JUMP:
-			return Input.GetButtonDown("Jump");
+			return Input.GetButtonDown(inputAlias[8]);
 		case Button.RELOAD:
-			return Input.GetButtonDown("Reload");
+			return Input.GetButtonDown(inputAlias[9]);
 		case Button.SWAP:
-			return Input.GetButtonDown("Swap");
+			return Input.GetButtonDown(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButtonDown("Taunt");
+			return Input.GetButtonDown(inputAlias[11]);
 		default:
 			return false;
 		}
@@ -147,21 +169,21 @@ public class InputManager : MonoBehaviour {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetButton("Attack");
+			return Input.GetButton(inputAlias[4]);
 		case Button.SHOOT:
-			return Input.GetButton("Shoot");
+			return Input.GetButton(inputAlias[5]);
 		case Button.DEFEND:
-			return Input.GetButton("Defend");
+			return Input.GetButton(inputAlias[6]);
 		case Button.SPECIAL:
-			return Input.GetButton("Special");
+			return Input.GetButton(inputAlias[7]);
 		case Button.JUMP:
-			return Input.GetButton("Jump");
+			return Input.GetButton(inputAlias[8]);
 		case Button.RELOAD:
-			return Input.GetButton("Reload");
+			return Input.GetButton(inputAlias[9]);
 		case Button.SWAP:
-			return Input.GetButton("Swap");
+			return Input.GetButton(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButton("Taunt");
+			return Input.GetButton(inputAlias[11]);
 		default:
 			return false;
 		}
@@ -171,21 +193,21 @@ public class InputManager : MonoBehaviour {
 		switch (button)
 		{
 		case Button.ATTACK:
-			return Input.GetButtonUp("Attack");
+			return Input.GetButtonUp(inputAlias[4]);
 		case Button.SHOOT:
-			return Input.GetButtonUp("Shoot");
+			return Input.GetButtonUp(inputAlias[5]);
 		case Button.DEFEND:
-			return Input.GetButtonUp("Defend");
+			return Input.GetButtonUp(inputAlias[6]);
 		case Button.SPECIAL:
-			return Input.GetButtonUp("Special");
+			return Input.GetButtonUp(inputAlias[7]);
 		case Button.JUMP:
-			return Input.GetButtonUp("Jump");
+			return Input.GetButtonUp(inputAlias[8]);
 		case Button.RELOAD:
-			return Input.GetButtonUp("Reload");
+			return Input.GetButtonUp(inputAlias[9]);
 		case Button.SWAP:
-			return Input.GetButtonUp("Swap");
+			return Input.GetButtonUp(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButtonUp("Taunt");
+			return Input.GetButtonUp(inputAlias[11]);
 		default:
 			return false;
 		}

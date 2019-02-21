@@ -19,7 +19,9 @@
 	DASH,
 	RUN,
 	RUNSTOP,
-	RUNTURN
+	RUNTURN,
+	MISSTECH,
+	GETUP
 }
 	
 public enum Weapon {

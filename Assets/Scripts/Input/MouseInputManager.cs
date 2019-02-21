@@ -8,12 +8,16 @@ public class MouseInputManager : InputManager {
 	Vector3 mousePosition;
 	Ray ray;
 
+	public override AxesInfo aimAxes {
+		get { return rightAxes; }
+	}
+
 	public override AxesInfo spcAxes {
-		get { return aimAxes; }
+		get { return rightAxes; }
 	}
 
 	public override AxesInfo cStick {
-		get { return aimAxes; }
+		get { return rightAxes; }
 	}
 
 	void OnDrawGizmos() {
@@ -55,7 +59,7 @@ public class MouseInputManager : InputManager {
 		mousePosition -= transform.position;
 		mousePosition.z = 0.0f;
 		mousePosition.Normalize();
-		aimAxes.x = mousePosition.x;
-		aimAxes.y = mousePosition.y;
+		rightAxes.x = mousePosition.x;
+		rightAxes.y = mousePosition.y;
 	}
 }

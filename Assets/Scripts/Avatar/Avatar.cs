@@ -170,6 +170,8 @@ public class Avatar : MonoBehaviour {
 		if (control)
 		{
 			input.UpdateAxes();
+			SetAnimStickDirection(input.moveAxes.direction);
+			SetAnimTiltLevel(input.moveAxes.tiltLevel);
 			ComboLink();
 			if (isActionable)
 			{
@@ -308,8 +310,7 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void MovementInput() {
-		SetAnimStickDirection(input.moveAxes.direction);
-		SetAnimTiltLevel(input.moveAxes.tiltLevel);
+
 		switch (currentState)
 		{
 		case (State.DASH):
@@ -583,6 +584,7 @@ public class Avatar : MonoBehaviour {
 						isHitstun = false;
 						TriggerOneFrame("MissedTechTrigger");
 					}
+					rb.velocity = Vector3.zero;
 				}
 				else
 				{
@@ -591,8 +593,7 @@ public class Avatar : MonoBehaviour {
 					{
 						TriggerOneFrame("HardLandTrigger");
 					}
-					
-					if (rb.velocity.y < -hardLandThresholdSpeed)
+					else if (rb.velocity.y < -hardLandThresholdSpeed)
 					{
 						TriggerOneFrame("HardLandTrigger");
 					}
@@ -894,6 +895,10 @@ public class Avatar : MonoBehaviour {
 		}
 		else
 		{
+			if (Mathf.Sign(input.spcAxes.x) != Mathf.Sign(transform.forward.x))
+			{
+				TurnAround();
+			}
 			specialVector = new Vector3(input.spcAxes.x, input.spcAxes.y, 0.0f);
 		}
 		if (isGrounded && specialVector.y < 0.0f)
@@ -918,19 +923,20 @@ public class Avatar : MonoBehaviour {
 			isGrounded = true;
 			if (specialVector.y < -0.2f)
 			{
-				TriggerOneFrame("HardLandTrigger");
+				anim.SetTrigger("HardLandTrigger");
 			}
 			else
 			{
-				TriggerOneFrame("SoftLandTrigger");
+				anim.SetTrigger("SoftLandTrigger");
 			}
-			TransferLandingMomentum();
+			//TransferLandingMomentum();
+			rb.velocity = Vector3.zero;
 		}
 		else
 		{
 			rb.velocity = specialVector * (airDriftSpeed / 2.0f);
 			isGrounded = false;
-			TriggerOneFrame("AirIdleTrigger");
+			anim.SetTrigger("AirIdleTrigger");
 		}
 	}
 
