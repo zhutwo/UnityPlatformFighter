@@ -26,8 +26,8 @@ public class Avatar : MonoBehaviour {
 	Vector2 specialVector;
 	Vector2 tempVec;
 	Vector2 savedVelocity;
-	Vector3 lookDirection;
 	Vector2 knockbackToApply;
+	Vector3 lookDirection;
 	Quaternion startRotation;
 	Quaternion lookRotation;
 
