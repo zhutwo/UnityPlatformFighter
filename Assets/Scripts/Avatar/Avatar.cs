@@ -118,7 +118,7 @@ public class Avatar : MonoBehaviour {
 	[Header("GroundCheck")]
 	[SerializeField] LayerMask groundLayer;
 	[SerializeField] Transform groundCheckPoint;
-	[SerializeField] float groundCheckRadius;
+	[SerializeField] float groundCheckLength;
 	[SerializeField] float maxSlopeAngle;
 
 	public int Health {
@@ -138,7 +138,7 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		Gizmos.DrawSphere(groundCheckPoint.position, groundCheckRadius);
+		Gizmos.DrawLine(groundCheckPoint.position, groundCheckPoint.position + Vector3.down * groundCheckLength);
 	}
 
 	// Use this for initialization
@@ -562,7 +562,7 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void GroundCheck() {
-		groundCheck = Physics.CheckSphere(groundCheckPoint.position, groundCheckRadius, groundLayer);
+		groundCheck = Physics.Raycast(groundCheckPoint.position, Vector3.down, groundCheckLength, groundLayer);
 		if (groundCheck)
 		{
 			// if falling
@@ -917,7 +917,7 @@ public class Avatar : MonoBehaviour {
 	void ExitSpecial() {
 		specialMovement = false;
 		modelMesh.material = baseMaterial;
-		groundCheck = Physics.CheckSphere(groundCheckPoint.position, groundCheckRadius, groundLayer);
+		groundCheck = Physics.Raycast(groundCheckPoint.position, Vector3.down, groundCheckLength, groundLayer);
 		if (groundCheck)
 		{
 			isGrounded = true;
