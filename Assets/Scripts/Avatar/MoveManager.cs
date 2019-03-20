@@ -40,14 +40,14 @@ public class MoveManager : MonoBehaviour {
 		[SerializeField] public Collider[] colliders;
 
 		List<GameObject> noHitList;
-		float direction;
+		float xDirection;
 
-		public float Direction { get { return direction; } }
+		public float XDirection { get { return xDirection; } }
 
-		public void SetActive(bool active, float direction = 0.0f) {
-			if (direction != 0.0f)
+		public void SetActive(bool active, float xDirection = 0.0f) {
+			if (xDirection != 0.0f)
 			{
-				this.direction = direction;
+				this.xDirection = xDirection;
 			}
 			for (int i = 0; i < colliders.Length; i++)
 			{
@@ -110,11 +110,12 @@ public class MoveManager : MonoBehaviour {
 		hitboxes[(int)activeMove].SetActive(false);
 	}
 
-	Vector3 CalculateKnockback(int damage, float direction, float angle, float baseKb, float kBscale, float enemydamage, float enemyweight, out float stunTime) {
+	Vector2 CalculateKnockback(int damage, float xDirection, float angle, float baseKb, float kBscale, float enemydamage, float enemyweight, out float stunTime) {
 		float power = (((((enemydamage / 10.0f + enemydamage * (float)damage / 20.0f) * (200.0f / (enemyweight + 100.0f)) * 1.4f) + 18.0f) * kBscale / 100.0f) + baseKb);
 		print(power);
 		stunTime = power * 0.4f / 60.0f;
-		return Quaternion.Euler(0.0f, 0.0f, direction * (angle - 90.0f)) * (power * Vector3.up);
+		Vector3 temp = Quaternion.Euler(0.0f, 0.0f, xDirection * (angle - 90.0f)) * (power * Vector3.up);
+		return new Vector2(temp.x, temp.y);
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -144,8 +145,8 @@ public class MoveManager : MonoBehaviour {
 				avatar.StartFreezeFrame(freezeTime);
 			}
 			float stunTime = 0.0f;
-			float direction = hitbox.Direction;
-			Vector3 finalKb = CalculateKnockback(damage, direction, angle, baseKb, kBscale, enemy.Damage, enemy.Weight, out stunTime);
+			float xDirection = hitbox.XDirection;
+			Vector2 finalKb = CalculateKnockback(damage, xDirection, angle, baseKb, kBscale, enemy.Damage, enemy.Weight, out stunTime);
 			enemy.TakeHit(damage, freezeTime, stunTime, finalKb);
 			avatar.AddMeter(damage);
 			hitbox.AddNoHit(other.gameObject);

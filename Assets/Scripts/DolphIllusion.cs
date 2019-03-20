@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DolphIllusion : MonoBehaviour {
 
-	Vector3 lookAt;
+	Quaternion lookRotation;
 	float timer;
 	[SerializeField] float timeout;
 	[SerializeField] GameObject spineRotationBone;
@@ -12,21 +12,22 @@ public class DolphIllusion : MonoBehaviour {
 	void Start() {
 		
 	}
-	
+		
 	// Update is called once per frame
 	void Update() {
 		timer += Time.deltaTime;
 		if (timer >= timeout)
 		{
-			Destroy(this.gameObject);
+			timer = 0.0f;
+			this.gameObject.SetActive(false);
 		}
 	}
 
 	void LateUpdate() {
-		spineRotationBone.transform.LookAt(lookAt);
+		spineRotationBone.transform.rotation = lookRotation;
 	}
 
-	public void SetLookVector(Vector3 look) {
-		lookAt = look;
+	public void SetRotation(Quaternion rotation) {
+		lookRotation = rotation;
 	}
 }

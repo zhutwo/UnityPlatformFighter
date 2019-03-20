@@ -77,6 +77,7 @@
      <Compile Include="Assets\Packs\Standard Assets\ParticleSystems\Scripts\ParticleSystemMultiplier.cs" />
      <Compile Include="Assets\Packs\Standard Assets\Utility\ParticleSystemDestroyer.cs" />
      <Compile Include="Assets\Scripts\Avatar\Avatar.cs" />
+     <Compile Include="Assets\Scripts\Avatar\Avatar3D.cs" />
      <Compile Include="Assets\Scripts\Avatar\Hitbox.cs" />
      <Compile Include="Assets\Scripts\Avatar\MoveManager.cs" />
      <Compile Include="Assets\Scripts\CameraControl.cs" />
@@ -132,16 +133,16 @@
      <None Include="Assets\Packs\ProCore\ProBuilder\readme.txt" />
      <None Include="Assets\Packs\ProCore\ProBuilder\Shader\pb_SmoothingPreview.shader" />
  <Reference Include="UnityEditor.StandardEvents">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro.Editor">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.PackageManagerUI.Editor">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.AIModule">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -342,19 +343,19 @@
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
  </Reference>
  <Reference Include="ProBuilderCore-Unity5">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ProBuilderCore-Unity5.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ProBuilderCore-Unity5.dll</HintPath>
  </Reference>
  <Reference Include="ProBuilderMeshOps-Unity5">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ProBuilderMeshOps-Unity5.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ProBuilderMeshOps-Unity5.dll</HintPath>
  </Reference>
  <Reference Include="KdTreeLib">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/KdTreeLib.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/KdTreeLib.dll</HintPath>
  </Reference>
  <Reference Include="pb_Stl">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/pb_Stl.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/pb_Stl.dll</HintPath>
  </Reference>
  <Reference Include="Poly2Tri">
- <HintPath>D:/Users/User/Documents/GitHub/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/Poly2Tri.dll</HintPath>
+ <HintPath>C:/Users/User/Desktop/Vertigo/Assets/Packs/ProCore/ProBuilder/Classes/ClassesLib/Poly2Tri.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Analytics">
  <HintPath>C:/Users/User/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll</HintPath>

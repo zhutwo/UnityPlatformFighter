@@ -13,22 +13,25 @@ public class Avatar : MonoBehaviour {
 	const int MAX_METER = 3000;
 	const int METER_CHARGE_RATE = 5;
 	const int METER_DAMAGE_RATIO = 5;
+	const int ILLUSION_TRAIL_LENGTH = 10;
 
 	MoveManager movemgr;
 	InputManager input;
 	Animator anim;
-	Rigidbody rb;
+	Rigidbody2D rb;
 	AudioSource audio;
 	GameObject[,] tracers;
+	GameObject[] illusionTrails;
 
-	Vector3 specialVector;
-	Vector3 specialDestination;
-	Vector3 tempVec;
-	Vector3 savedVelocity;
+	Vector2 specialVector;
+	Vector2 tempVec;
+	Vector2 savedVelocity;
 	Vector3 lookDirection;
-	Vector3 knockbackToApply;
+	Vector2 knockbackToApply;
 	Quaternion startRotation;
 	Quaternion lookRotation;
+
+	int illusionIdx;
 
 	float comboTimer;
 	float shotTimer;
@@ -37,7 +40,7 @@ public class Avatar : MonoBehaviour {
 	float stunTimer;
 	float freezeTimer;
 
-	bool groundCheck;
+	bool groundCheck = false;
 	bool applyGroundMotion = false;
 	bool isGrounded = true;
 	bool isHitstun = false;
@@ -116,6 +119,7 @@ public class Avatar : MonoBehaviour {
 	[SerializeField] int meterCost;
 
 	[Header("GroundCheck")]
+	[SerializeField] [Tooltip("Environmental Collision Box")] PolygonCollider2D ECB;
 	[SerializeField] LayerMask groundLayer;
 	[SerializeField] Transform groundCheckPoint;
 	[SerializeField] float groundCheckLength;
@@ -138,7 +142,7 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		Gizmos.DrawLine(groundCheckPoint.position, groundCheckPoint.position + Vector3.down * groundCheckLength);
+		Gizmos.DrawLine(groundCheckPoint.position + Vector3.up * groundCheckLength, groundCheckPoint.position + Vector3.down * groundCheckLength);
 	}
 
 	// Use this for initialization
@@ -146,7 +150,7 @@ public class Avatar : MonoBehaviour {
 		movemgr = GetComponent<MoveManager>();
 		input = GetComponent<InputManager>();
 		anim = GetComponent<Animator>();
-		rb = GetComponent<Rigidbody>();
+		rb = GetComponent<Rigidbody2D>();
 		audio = GetComponent<AudioSource>();
 		currentState = State.IDLE;
 		currentWeapon = Weapon.MELEE;
@@ -159,6 +163,12 @@ public class Avatar : MonoBehaviour {
 				tracers[i, j] = Instantiate(tracerPrefab);
 				tracers[i, j].GetComponent<Tracer>().SetOwner(this.gameObject);
 			}
+		}
+		illusionTrails = new GameObject[ILLUSION_TRAIL_LENGTH];
+		for (int i = 0; i < ILLUSION_TRAIL_LENGTH; i++)
+		{
+			illusionTrails[i] = Instantiate(illusionPrefab);
+			illusionTrails[i].SetActive(false);
 		}
 		ammo = clipSize;
 		health = maxhealth;
@@ -185,8 +195,14 @@ public class Avatar : MonoBehaviour {
 		}
 		if (specialMovement)
 		{
-			GameObject illusion = Instantiate(illusionPrefab, transform.position, transform.rotation);
-			illusion.GetComponent<DolphIllusion>().SetLookVector(specialDestination);
+			if (illusionIdx < ILLUSION_TRAIL_LENGTH)
+			{
+				illusionTrails[illusionIdx].transform.position = transform.position;
+				illusionTrails[illusionIdx].transform.rotation = transform.rotation;
+				illusionTrails[illusionIdx].SetActive(true);
+				illusionTrails[illusionIdx].GetComponent<DolphIllusion>().SetRotation(lookRotation);
+				illusionIdx++;
+			}
 		}
 		else
 		{
@@ -550,7 +566,7 @@ public class Avatar : MonoBehaviour {
 			}
 			else
 			{
-				rb.velocity -= groundTraction * Mathf.Sign(rb.velocity.x) * Vector3.right * Time.deltaTime;
+				rb.velocity -= groundTraction * Mathf.Sign(rb.velocity.x) * Vector2.right * Time.deltaTime;
 			}
 		}
 	}
@@ -561,8 +577,12 @@ public class Avatar : MonoBehaviour {
 		rb.velocity = tempVec;
 	}
 
+	bool GroundRaycast() {
+		return Physics2D.Raycast(new Vector2(groundCheckPoint.position.x, groundCheckPoint.position.y), Vector2.down, groundCheckLength, groundLayer);
+	}
+
 	void GroundCheck() {
-		groundCheck = Physics.Raycast(groundCheckPoint.position, Vector3.down, groundCheckLength, groundLayer);
+		groundCheck = GroundRaycast();
 		if (groundCheck)
 		{
 			// if falling
@@ -584,7 +604,7 @@ public class Avatar : MonoBehaviour {
 						isHitstun = false;
 						TriggerOneFrame("MissedTechTrigger");
 					}
-					rb.velocity = Vector3.zero;
+					rb.velocity = Vector2.zero;
 				}
 				else
 				{
@@ -618,7 +638,7 @@ public class Avatar : MonoBehaviour {
 	void FreeFall() {
 		if (rb.velocity.y > -terminalFallSpeed)
 		{
-			rb.velocity -= transform.up * fallAccel * Time.deltaTime;
+			rb.velocity += Vector2.down * fallAccel * Time.deltaTime;
 			if (rb.velocity.y < -terminalFallSpeed)
 			{
 				tempVec = rb.velocity;
@@ -628,11 +648,11 @@ public class Avatar : MonoBehaviour {
 		}
 		if (rb.velocity.x > airDriftSpeed)
 		{
-			rb.velocity += Vector3.left * airDriftAccel * Time.deltaTime;
+			rb.velocity += Vector2.left * airDriftAccel * Time.deltaTime;
 		}
 		else if (rb.velocity.x < -airDriftSpeed)
 		{
-			rb.velocity += Vector3.right * airDriftAccel * Time.deltaTime;
+			rb.velocity += Vector2.right * airDriftAccel * Time.deltaTime;
 		}
 	}
 
@@ -641,13 +661,13 @@ public class Avatar : MonoBehaviour {
 		freezeTimer = time;
 		isFreezeFrame = true;
 		anim.speed = 0.0f;
-		rb.constraints = RigidbodyConstraints.FreezeAll;
+		rb.constraints = RigidbodyConstraints2D.FreezeAll;
 	}
 
 	void EndFreezeFrame() {
 		isFreezeFrame = false;
 		anim.speed = 1.0f;
-		rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; //reset constraints to normal
+		rb.constraints = RigidbodyConstraints2D.FreezeRotation; //reset constraints to normal
 		if (currentState == State.TUMBLE)
 		{
 			rb.velocity = knockbackToApply / 8.0f;
@@ -660,7 +680,7 @@ public class Avatar : MonoBehaviour {
 		}
 	}
 
-	public void TakeHit(int damage, float freezeTime, float stunTime, Vector3 knockback) {
+	public void TakeHit(int damage, float freezeTime, float stunTime, Vector2 knockback) {
 		//health -= damage;
 		this.damage += damage;
 		stunTimer = stunTime;
@@ -677,7 +697,7 @@ public class Avatar : MonoBehaviour {
 			ChangeState(State.TUMBLE);
 			TriggerOneFrame("TumbleTrigger");
 			isGrounded = false;
-			hipRotationBone.transform.rotation = Quaternion.LookRotation(-knockback, Vector3.up);
+			hipRotationBone.transform.rotation = Quaternion.LookRotation(new Vector3(knockback.x, knockback.y), Vector3.up);
 		}
 		transform.eulerAngles = new Vector3(0.0f, Mathf.Sign(knockback.x) * -90.0f, 0.0f);
 		StartFreezeFrame(freezeTime);
@@ -745,11 +765,11 @@ public class Avatar : MonoBehaviour {
 		// performs full hop if player is still holding jump at end of jump squat animation
 		if (input.GetButtonHeld(Button.JUMP))
 		{
-			rb.velocity += transform.up * fullHopSpeed;
+			rb.velocity += Vector2.up * fullHopSpeed;
 		}
 		else
 		{
-			rb.velocity += transform.up * shortHopSpeed;
+			rb.velocity += Vector2.up * shortHopSpeed;
 		}
 		isGrounded = false;
 	}
@@ -891,7 +911,7 @@ public class Avatar : MonoBehaviour {
 	void StartSpecial() {
 		if (input.spcAxes.x == 0.0f && input.spcAxes.y == 0.0f)
 		{
-			specialVector = transform.forward;
+			specialVector = new Vector2(transform.forward.x, transform.forward.y);
 		}
 		else
 		{
@@ -899,14 +919,13 @@ public class Avatar : MonoBehaviour {
 			{
 				TurnAround();
 			}
-			specialVector = new Vector3(input.spcAxes.x, input.spcAxes.y, 0.0f);
+			specialVector = new Vector2(input.spcAxes.x, input.spcAxes.y);
 		}
 		if (isGrounded && specialVector.y < 0.0f)
 		{
 			specialVector.y = 0.0f;
 		}
 		specialVector.Normalize();
-		specialDestination = (specialVector * specialRange) + hipRotationBone.transform.position;
 		specialMovement = true;
 		specialStartup = false;
 		modelMesh.material = illusionMaterial;
@@ -915,9 +934,10 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void ExitSpecial() {
+		illusionIdx = 0;
 		specialMovement = false;
 		modelMesh.material = baseMaterial;
-		groundCheck = Physics.Raycast(groundCheckPoint.position, Vector3.down, groundCheckLength, groundLayer);
+		groundCheck = GroundRaycast();
 		if (groundCheck)
 		{
 			isGrounded = true;
@@ -930,7 +950,7 @@ public class Avatar : MonoBehaviour {
 				anim.SetTrigger("SoftLandTrigger");
 			}
 			//TransferLandingMomentum();
-			rb.velocity = Vector3.zero;
+			rb.velocity = Vector2.zero;
 		}
 		else
 		{
@@ -983,7 +1003,7 @@ public class Avatar : MonoBehaviour {
 			tracers[ammo, i].transform.rotation = lookRotation;
 			tracers[ammo, i].transform.Rotate(spread, 0.0f, 0.0f);
 			tracers[ammo, i].SetActive(true);
-			tracers[ammo, i].GetComponent<Rigidbody>().velocity = (tracers[ammo, i].transform.forward * shotForce * drift) + (rb.velocity * SHOT_MOMENTUM_TRANSFER_RATIO);
+			tracers[ammo, i].GetComponent<Rigidbody>().velocity = (tracers[ammo, i].transform.forward * shotForce * drift) + (new Vector3(rb.velocity.x, rb.velocity.y) * SHOT_MOMENTUM_TRANSFER_RATIO);
 		}
 		if (ammo <= 0)
 		{
@@ -997,16 +1017,15 @@ public class Avatar : MonoBehaviour {
 		{
 			lookRotation = Quaternion.LookRotation(lookDirection);
 			spineRotationBone.transform.rotation = lookRotation;
-			tempVec = spineTopRotationBone.transform.localEulerAngles;
-			tempVec.y += TORSO_ROTATION_OFFSET;
-			spineTopRotationBone.transform.localEulerAngles = tempVec;
+			Vector3 temp = spineTopRotationBone.transform.localEulerAngles;
+			temp.y += TORSO_ROTATION_OFFSET;
+			spineTopRotationBone.transform.localEulerAngles = temp;
 			headRotationBone.transform.rotation = lookRotation;
 		}
 		else if (currentState == State.SPECIAL)
 		{
-			lookRotation = Quaternion.LookRotation(specialVector);
+			lookRotation = Quaternion.LookRotation(new Vector3(specialVector.x, specialVector.y));
 			spineRotationBone.transform.rotation = lookRotation;
-			//spineRotationBone.transform.LookAt(specialDestination);
 		}
 	}
 
