@@ -27,7 +27,10 @@ public struct AxesInfo {
 	public float x;
 	public float y;
 	public Direction direction;
+	public Direction directionLast;
 	public int tiltLevel;
+	public bool isTapInput;
+	public bool isBufferedTapInput;
 
 	public Vector2 asVector {
 		get { return new Vector2(x, y); }
@@ -43,6 +46,7 @@ public class InputManager : MonoBehaviour {
 		KBMOUSE
 	}
 
+	const int BUFFER_SIZE = 2;
 	const float AXIS_TILT_THRESHOLD = 0.25f;
 
 	[SerializeField] int playerIndex;
@@ -89,6 +93,11 @@ public class InputManager : MonoBehaviour {
 	}
 
 	protected virtual void UpdateInfo(ref AxesInfo axes) {
+		// 2 frame window to tap input
+		AxesInfo.Direction directionBeforeLast = axes.directionLast;
+		axes.directionLast = axes.direction;
+		axes.isBufferedTapInput = axes.isTapInput;
+		axes.isTapInput = false;
 		axes.tiltLevel = 0;
 		axes.direction = AxesInfo.Direction.NONE;
 		if (axes.x != 0.0f || axes.y != 0.0f)
@@ -131,6 +140,19 @@ public class InputManager : MonoBehaviour {
 					axes.direction = AxesInfo.Direction.DOWN;
 				}
 			}
+		}
+		if (axes.tiltLevel == 2)
+		{
+			if (axes.direction != axes.directionLast || axes.direction != directionBeforeLast)
+			{
+				axes.isTapInput = true;
+				axes.isBufferedTapInput = false;
+				axes.directionLast = axes.direction; // lock out tap input for 1 frame
+			}
+		}
+		else
+		{
+			axes.isBufferedTapInput = false;
 		}
 	}
 

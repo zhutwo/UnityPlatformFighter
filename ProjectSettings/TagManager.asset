@@ -21,17 +21,17 @@ TagManager:
   - Platforms
   - Walls
   - Ceilings
+  - EdgeStops
   - 
   - 
   - 
   - 
-  - 
-  - ECBs
+  - MainECB
   - Hitboxes
   - Hurtboxes
-  - 
-  - 
-  - 
+  - PlatformECB
+  - EdgeECB
+  - TriggerECB
   - 
   - 
   - 
