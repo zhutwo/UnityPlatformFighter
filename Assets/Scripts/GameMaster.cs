@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameMaster : MonoBehaviour {
 
 	[SerializeField] Transform[] spawns = new Transform[2];
+	[SerializeField] LayerMask ecbLayer;
 
 	// Use this for initialization
 	void Start() {
@@ -17,10 +18,10 @@ public class GameMaster : MonoBehaviour {
 		
 	}
 
-	void OnTriggerEnter(Collider other) {
-		if (other.gameObject.layer == 11)
+	void OnTriggerEnter2D(Collider2D other) {
+		if (1 << other.gameObject.layer == ecbLayer)
 		{
-			Avatar avatar = other.gameObject.GetComponent<Avatar>();
+			Avatar avatar = other.gameObject.GetComponentInParent<Avatar>();
 			avatar.Respawn(spawns[avatar.playerID].position);
 		}
 	}

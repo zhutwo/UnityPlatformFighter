@@ -20,7 +20,7 @@ public enum Move {
 }
 
 // this class receives callbacks from animator and activates hitboxes on appropriate frames
-public class MoveManager : MonoBehaviour {
+public class HitboxManager : MonoBehaviour {
 
 	[System.Serializable]
 	public class Hitbox : System.Object {

@@ -15,7 +15,7 @@ public class Avatar : MonoBehaviour {
 	const int METER_DAMAGE_RATIO = 5;
 	const int ILLUSION_TRAIL_LENGTH = 10;
 
-	MoveManager movemgr;
+	HitboxManager hitboxMgr;
 	InputManager input;
 	Animator anim;
 	Rigidbody2D rb;
@@ -142,12 +142,12 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		Gizmos.DrawLine(groundCheckPoint.position + Vector3.up * groundCheckLength, groundCheckPoint.position + Vector3.down * groundCheckLength);
+		Gizmos.DrawLine(groundCheckPoint.position, groundCheckPoint.position + Vector3.down * groundCheckLength);
 	}
 
 	// Use this for initialization
 	void Start() {
-		movemgr = GetComponent<MoveManager>();
+		hitboxMgr = GetComponent<HitboxManager>();
 		input = GetComponent<InputManager>();
 		anim = GetComponent<Animator>();
 		rb = GetComponent<Rigidbody2D>();
@@ -843,7 +843,7 @@ public class Avatar : MonoBehaviour {
 
 		if (currentState == State.ATTACK || currentState == State.DASHATTACK || currentState == State.AERIAL || currentState == State.COMBO || currentState == State.SPECIAL)
 		{
-			movemgr.ResetHitboxes();
+			hitboxMgr.ResetHitboxes();
 		}
 		if (newState == State.SPECIAL)
 		{
@@ -1104,6 +1104,9 @@ public class Avatar : MonoBehaviour {
 		damage = 0.0f;
 		meter = MAX_METER;
 		rb.transform.position = position;
+		rb.velocity = Vector2.zero;
+		isGrounded = false;
+		hasDoubleJump = true;
 		currentState = State.IDLE;
 		TriggerOneFrame("AirIdleTrigger");
 	}

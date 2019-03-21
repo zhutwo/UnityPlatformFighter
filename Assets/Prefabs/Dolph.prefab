@@ -35,7 +35,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4919172292213670}
   - component: {fileID: 135054881333789986}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: RFootHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51,7 +51,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4802162941636234}
   - component: {fileID: 135815793689849440}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: LLegHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -112,7 +112,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4812611528071312}
   - component: {fileID: 135293940679375756}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: LFootHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128,7 +128,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4095741156163336}
   - component: {fileID: 135474610804363054}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: LArmHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -174,7 +174,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4190037570754686}
   - component: {fileID: 136948981744749722}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: BladeR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,7 +220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4221881284281184}
   - component: {fileID: 136413920429261292}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ArmL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -344,7 +344,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4467285183680026}
   - component: {fileID: 135013611192879340}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_Chest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -360,7 +360,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4508733098566988}
   - component: {fileID: 136382320937192778}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ShinL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -408,7 +408,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4188849370381440}
   - component: {fileID: 135390591596724744}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: RLegHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -456,7 +456,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4638400620450366}
   - component: {fileID: 135758936949850396}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -472,7 +472,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4483806532598834}
   - component: {fileID: 136186897360557332}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ArmR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -488,7 +488,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4542996723603098}
   - component: {fileID: 60944001953838110}
-  m_Layer: 14
+  m_Layer: 20
   m_Name: EnvironmentalCollisionBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -504,7 +504,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4379624974087886}
   - component: {fileID: 135889279974393128}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: RKneeHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -520,7 +520,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4639139416508974}
   - component: {fileID: 135957973039448486}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: SpecialHitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -551,7 +551,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4540360673109902}
   - component: {fileID: 136948698200420796}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ForeArmL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -614,7 +614,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4236446853442708}
   - component: {fileID: 135856286931153416}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_Trunk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -647,7 +647,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4435561573065256}
   - component: {fileID: 135252883405534440}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: RArmHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -678,7 +678,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4104749062288958}
   - component: {fileID: 136177105283259538}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: BladeL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -741,7 +741,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4693853867419656}
   - component: {fileID: 135015015757253190}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: LHandHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -774,7 +774,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4096956336361994}
   - component: {fileID: 136574246610687254}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ShinR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -790,7 +790,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4416153301824430}
   - component: {fileID: 136017737677983850}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_ForeArmR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -806,7 +806,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4861470166327084}
   - component: {fileID: 136858551634432320}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_FemurL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -822,7 +822,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4255946688011074}
   - component: {fileID: 135187228761173416}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: RHandHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -838,7 +838,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4166555934724484}
   - component: {fileID: 135333374636868104}
-  m_Layer: 12
+  m_Layer: 21
   m_Name: LKneeHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -869,7 +869,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4936160010049248}
   - component: {fileID: 136035286196664628}
-  m_Layer: 13
+  m_Layer: 22
   m_Name: Hurtbox_FemurR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -967,7 +967,7 @@ GameObject:
   - component: {fileID: 114568974463447976}
   - component: {fileID: 114903779960208478}
   - component: {fileID: 82790098646361566}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: Dolph
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1323,7 +1323,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1961158142958950}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -3.76, y: 7.62, z: 0}
+  m_LocalPosition: {x: -5, y: 6, z: 0}
   m_LocalScale: {x: 80, y: 80, z: 80}
   m_Children:
   - {fileID: 4107583191895542}
@@ -2335,7 +2335,7 @@ MonoBehaviour:
   ECB: {fileID: 60944001953838110}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 6144
   groundCheckPoint: {fileID: 4542996723603098}
   groundCheckLength: 0.1
   maxSlopeAngle: 0
@@ -2389,7 +2389,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetLayer:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 4194304
   hitboxes:
   - move: 0
     hasFreezeFrames: 1
