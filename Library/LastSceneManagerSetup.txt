@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/Scenes/Dreamland.unity
-  isLoaded: 1
-  isActive: 1

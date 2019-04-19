@@ -20,8 +20,7 @@ public struct AxesInfo {
 		UP,
 		DOWN,
 		RIGHT,
-		LEFT,
-		NULL
+		LEFT
 	}
 
 	public float x;
@@ -50,7 +49,7 @@ public class InputManager : MonoBehaviour {
 	const float AXIS_TILT_THRESHOLD = 0.25f;
 
 	[SerializeField] int playerIndex;
-	[SerializeField] string[] inputAlias = new string[12];
+	[SerializeField] string[] inputAlias = new string[11];
 
 	public AxesInfo leftAxes;
 	public AxesInfo rightAxes;
@@ -181,7 +180,7 @@ public class InputManager : MonoBehaviour {
 		case Button.SWAP:
 			return Input.GetButtonDown(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButtonDown(inputAlias[11]);
+			//return Input.GetButtonDown(inputAlias[11]);
 		default:
 			return false;
 		}
@@ -205,7 +204,7 @@ public class InputManager : MonoBehaviour {
 		case Button.SWAP:
 			return Input.GetButton(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButton(inputAlias[11]);
+			//return Input.GetButton(inputAlias[11]);
 		default:
 			return false;
 		}
@@ -229,7 +228,7 @@ public class InputManager : MonoBehaviour {
 		case Button.SWAP:
 			return Input.GetButtonUp(inputAlias[10]);
 		case Button.TAUNT:
-			return Input.GetButtonUp(inputAlias[11]);
+			//return Input.GetButtonUp(inputAlias[11]);
 		default:
 			return false;
 		}

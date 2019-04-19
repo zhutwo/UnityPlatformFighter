@@ -3,7 +3,7 @@
 --- !u!19 &1
 Physics2DSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 3
+  serializedVersion: 4
   m_Gravity: {x: 0, y: -9.81}
   m_DefaultMaterial: {fileID: 0}
   m_VelocityIterations: 8
@@ -42,6 +42,7 @@ Physics2DSettings:
   m_QueriesHitTriggers: 1
   m_QueriesStartInColliders: 1
   m_CallbacksOnDisable: 1
+  m_ReuseCollisionCallbacks: 0
   m_AutoSyncTransforms: 1
   m_AlwaysShowColliders: 0
   m_ShowColliderSleep: 1
@@ -52,4 +53,4 @@ Physics2DSettings:
   m_ColliderAsleepColor: {r: 0.5686275, g: 0.95686275, b: 0.54509807, a: 0.36078432}
   m_ColliderContactColor: {r: 1, g: 0, b: 1, a: 0.6862745}
   m_ColliderAABBColor: {r: 1, g: 1, b: 0, a: 0.2509804}
-  m_LayerCollisionMatrix: c8000f7cc8000f7cc8000f7cffffffffc8000f7cc8000f7cffffffffffffffffc880ff7fc8c0ff7fc8001f7cc8001f7cc8008f7ec8001f7cc8021f7cc8030ffdffffffffffffffffffffffffffffffffc86f1ffcc8036ffcc8032ffcc8130ffcc8830ffcc8130ffcffffffffffffffffffffffffffffffffffffffffc880ff7f
+  m_LayerCollisionMatrix: c8000f78c8000f78c8000f78ffffffffc8000f78c8000f78ffffffffffffffffc880ff7fc8c0ff7fc8001f78c8001f7cc8008f7ac8001f7cc8021f7cc8030ff9ffffffffffffffffffffffffffffffffc86f0ff8c8036ff8c8032ffcc8130ff8c8830ff8c8130ff8c86b4ff8ffffffffffffffffffffffffffffffffc880ff7f

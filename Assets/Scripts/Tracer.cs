@@ -7,9 +7,10 @@ public class Tracer : MonoBehaviour {
 	GameObject owner;
 	Rigidbody rb;
 	float timer;
-	const float knockback = 100.0f;
-	const int damage = 2;
+	const float knockback = 80.0f;
+	const int damage = 1;
 	[SerializeField] float lifetime;
+    [SerializeField] LayerMask hurtBoxLayer;
 	// Use this for initialization
 	void Start() {
 		timer = 0.0f;
@@ -37,17 +38,12 @@ public class Tracer : MonoBehaviour {
 		this.owner = owner;
 	}
 
-	void OnTriggerEnter(Collider other) {
-		if (other.gameObject.layer == 11 && other.gameObject != owner)
-		{
-			Avatar avatar = other.gameObject.GetComponent<Avatar>();
-			avatar.TakeHit(damage, 0.1f, 0.2f, transform.forward * knockback);
-			Recycle();
-		}
-		else if (other.gameObject.layer == 10)
-		{
-			Recycle();
-		}
-
-	}
+    void OnTriggerEnter(Collider other) {
+        if (1 << other.gameObject.layer == hurtBoxLayer)
+        {
+            Avatar avatar = other.gameObject.GetComponentInParent<Avatar>();
+            avatar.TakeHit(damage, 0.1f, 0.2f, transform.forward * knockback);
+        }
+        Recycle();
+    }
 }

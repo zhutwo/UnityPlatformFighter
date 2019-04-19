@@ -25,7 +25,7 @@ public enum State {
 	RUNSTOP,
 	RUNTURN,
 	MISSTECH,
-	GETUP
+	GETUP,
 }
 
 public enum Weapon {
@@ -39,7 +39,7 @@ public class Avatar : MonoBehaviour {
 	const float TORSO_ROTATION_OFFSET = 35.0f;
 	const float SHOT_MOMENTUM_TRANSFER_RATIO = 0.5f;
 	const float SHOTGUN_VELOCITY_DRIFT_LIMIT = 0.8f;
-	const float GROUND_STUN_THRESHOLD = 60.0f;
+	const float GROUND_STUN_THRESHOLD = 50.0f;
 	const float TECH_WINDOW = 0.25f;
 	const int MAX_METER = 3000;
 	const int METER_CHARGE_RATE = 5;
@@ -50,9 +50,10 @@ public class Avatar : MonoBehaviour {
 	ECBManager ecb;
 	HitboxManager hitbox;
 	InputManager input;
+    FXManager fx;
 	Animator anim;
 	Rigidbody2D rb;
-	AudioSource audio;
+    AudioSource audio;
 
 	GameObject[,] tracers;
 	GameObject[] illusionTrails;
@@ -88,12 +89,12 @@ public class Avatar : MonoBehaviour {
 	bool isReloading = false;
 	bool isCombo = false;
 	bool isShotCooldown = false;
+    bool isParrying = false;
 
 	[SerializeField] bool control = true;
 	[SerializeField] State currentState;
 	[SerializeField] Weapon currentWeapon;
 	[SerializeField] UIManager ui;
-	[SerializeField] GameObject trailPrefab;
 	[SerializeField] public int playerID;
 
 	[Header("Stats")]
@@ -169,8 +170,9 @@ public class Avatar : MonoBehaviour {
 
 	void Start() {
 		ecb = GetComponentInChildren<ECBManager>();
-		hitbox = GetComponent<HitboxManager>();
+		hitbox = GetComponentInChildren<HitboxManager>();
 		input = GetComponent<InputManager>();
+        fx = GetComponent<FXManager>();
 		anim = GetComponent<Animator>();
 		rb = GetComponent<Rigidbody2D>();
 		audio = GetComponent<AudioSource>();
@@ -238,7 +240,7 @@ public class Avatar : MonoBehaviour {
 				illusionIdx++;
 			}
 		}
-		else
+		else if (currentState != State.SPECIAL)
 		{
 			ApplyPhysics();
 			GroundCheck();
@@ -254,10 +256,6 @@ public class Avatar : MonoBehaviour {
 			{
 				meter = MAX_METER;
 			}
-		}
-		if (currentState == State.TUMBLE)
-		{
-			Instantiate(trailPrefab, transform.position, transform.rotation);
 		}
 		UpdateUI();
 		RunTimers();
@@ -320,8 +318,15 @@ public class Avatar : MonoBehaviour {
 		{
 			if (currentWeapon == Weapon.MELEE)
 			{
-				TriggerOneFrame("AttackTrigger", input.cStick.direction);
-			}
+                TriggerOneFrame("AttackTrigger", input.cStick.direction);
+                {
+                    if (isGrounded && !DirectionSameAsInput(input.cStick))
+                    {
+                        if (input.cStick.direction == AxesInfo.Direction.LEFT || input.cStick.direction == AxesInfo.Direction.RIGHT)
+                        TurnAround();
+                    }
+                }
+            }
 		}
 		else if (input.GetButtonDown(Button.ATTACK))
 		{
@@ -748,6 +753,7 @@ public class Avatar : MonoBehaviour {
 			rb.velocity = knockbackToApply / 8.0f;
 			techTimer = 0.0f;
 			wasTechPressed = false;
+            fx.PlayTrail(true);
 		}
 		else
 		{
@@ -756,7 +762,11 @@ public class Avatar : MonoBehaviour {
 	}
 
 	public void TakeHit(int damage, float freezeTime, float stunTime, Vector2 knockback) {
-		//health -= damage;
+		if (isParrying)
+        {
+            return;
+        }
+        //health -= damage;
 		this.damage += damage;
 		stunTimer = stunTime;
 		isHitstun = true;
@@ -776,6 +786,7 @@ public class Avatar : MonoBehaviour {
 		}
 		transform.eulerAngles = new Vector3(0.0f, Mathf.Sign(knockback.x) * -90.0f, 0.0f);
 		StartFreezeFrame(freezeTime);
+        fx.ShakeCamera(freezeTime);
 	}
 
 	#endregion
@@ -863,11 +874,16 @@ public class Avatar : MonoBehaviour {
 
 	#region AnimTools
 
-	void TriggerOneFrame(string trigger, AxesInfo.Direction direction = AxesInfo.Direction.NULL) {
-		if (direction != AxesInfo.Direction.NULL)
-		{
-			SetAnimStickDirection(direction);
-		}
+	public void ActivateHitbox(Move move) {
+		hitbox.ActivateHitbox(move);
+	}
+
+	public void DeactivateHitbox(Move move) {
+		hitbox.DeactivateHitbox(move);
+	}
+
+	void TriggerOneFrame(string trigger, AxesInfo.Direction direction = AxesInfo.Direction.NONE) {
+		SetAnimStickDirection(direction);
 		StartCoroutine(TriggerOneFrameCoroutine(trigger));
 	}
 
@@ -931,7 +947,19 @@ public class Avatar : MonoBehaviour {
 
 	void ChangeState(State newState) {
 
-		if (currentState == State.ATTACK || currentState == State.DASHATTACK || currentState == State.AERIAL || currentState == State.COMBO || currentState == State.SPECIAL)
+        if (currentState == State.TUMBLE && newState != State.TUMBLE)
+        {
+            fx.PlayTrail(false);
+        }
+        if (newState == State.DASH)
+        {
+            fx.PlayDashPoof();
+        }
+        if (newState == State.MISSTECH)
+        {
+            fx.PlayHardLandPoof();
+        }
+        if (currentState == State.ATTACK || currentState == State.DASHATTACK || currentState == State.AERIAL || currentState == State.COMBO || currentState == State.SPECIAL)
 		{
 			hitbox.ResetHitboxes();
 		}
@@ -1041,6 +1069,7 @@ public class Avatar : MonoBehaviour {
 		if (ecb.GroundedRaycast())
 		{
 			isGrounded = true;
+            hasDoubleJump = true;
 			if (specialVector.y < -0.2f)
 			{
 				anim.SetTrigger("HardLandTrigger");
@@ -1060,7 +1089,19 @@ public class Avatar : MonoBehaviour {
 		}
 	}
 
-	void ChangeMaterial(int i) {
+    void ActivateParry(int active)
+    {
+        if (active == 0)
+        {
+            isParrying = false;
+        }
+        else
+        {
+            isParrying = true;
+        }
+    }
+
+    void ChangeMaterial(int i) {
 		if (i == 0)
 		{
 			modelMesh.material = baseMaterial;
@@ -1132,6 +1173,20 @@ public class Avatar : MonoBehaviour {
 	#endregion
 
 	#region Misc
+
+    public bool IsTumble()
+    {
+        if (currentState == State.TUMBLE)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsFreezeFrame()
+    {
+        return isFreezeFrame;
+    }
 
 	public void AddMeter(int damage) {
 		if (meter < MAX_METER)
@@ -1205,10 +1260,13 @@ public class Avatar : MonoBehaviour {
 		meter = MAX_METER;
 		rb.transform.position = position;
 		rb.velocity = Vector2.zero;
-		isGrounded = false;
+		isGrounded = true;
 		hasDoubleJump = true;
-		currentState = State.IDLE;
-		TriggerOneFrame("AirIdleTrigger");
+        specialMovement = false;
+        modelMesh.material = baseMaterial;
+        fx.PlayTrail(false);
+        currentState = State.IDLE;
+        anim.SetTrigger("RespawnTrigger");
 	}
 
 	#endregion

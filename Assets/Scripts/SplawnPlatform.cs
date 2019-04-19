@@ -6,10 +6,21 @@ public class SplawnPlatform : MonoBehaviour {
 
 	[SerializeField] GameObject master;
 
-	void OnTriggerExit2D(Collider2D other) {
+    void OnEnable()
+    {
+        Invoke("TimeOut", 3.0f);
+    }
+
+    void OnTriggerExit2D(Collider2D other) {
 		if (other.gameObject == master)
 		{
+            CancelInvoke("TimeOut");
 			this.gameObject.SetActive(false);
 		}
 	}
+
+    void TimeOut()
+    {
+        this.gameObject.SetActive(false);
+    }
 }

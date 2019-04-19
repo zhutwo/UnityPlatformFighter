@@ -26,6 +26,7 @@ public class HitboxManager : MonoBehaviour {
 	public class Hitbox : System.Object {
 
 		[SerializeField] public Move move;
+        [SerializeField] public float freezeFrameMultiplier = 1.0f;
 		[SerializeField] public bool hasFreezeFrames = true;
 		[SerializeField] public bool hasSweetSpot = false;
 		[SerializeField] public int baseDamage;
@@ -37,6 +38,9 @@ public class HitboxManager : MonoBehaviour {
 		[SerializeField] public float sweetSpotAngle;
 		[SerializeField] public float sweetSpotKnockback;
 		[SerializeField] public float sweetSpotScaling;
+		[SerializeField] public AudioClip attackSound;
+		[SerializeField] public AudioClip hitSound;
+        [SerializeField] public GameObject hitEffectPrefab;
 		[SerializeField] public Collider[] colliders;
 
 		List<GameObject> noHitList;
@@ -76,6 +80,8 @@ public class HitboxManager : MonoBehaviour {
 	[SerializeField] LayerMask targetLayer;
 	[SerializeField] Hitbox[] hitboxes = new Hitbox[14];
 
+    FXManager fx;
+	AudioSource audio;
 	Avatar avatar;
 	Move activeMove;
 
@@ -89,7 +95,9 @@ public class HitboxManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start() {
-		avatar = GetComponent<Avatar>();
+        fx = GetComponentInParent<FXManager>();
+		audio = GetComponentInParent<AudioSource>();
+		avatar = GetComponentInParent<Avatar>();
 		for (int i = 0; i < hitboxes.Length; i++)
 		{
 			hitboxes[i].InitNoHit(8);
@@ -99,7 +107,8 @@ public class HitboxManager : MonoBehaviour {
 
 	public void ActivateHitbox(Move move) {
 		activeMove = move;
-		hitboxes[(int)move].SetActive(true, transform.forward.x);
+		hitboxes[(int)move].SetActive(true, avatar.transform.forward.x);
+		audio.PlayOneShot(hitboxes[(int)move].attackSound);
 	}
 
 	public void DeactivateHitbox(Move move) {
@@ -113,7 +122,7 @@ public class HitboxManager : MonoBehaviour {
 	Vector2 CalculateKnockback(int damage, float xDirection, float angle, float baseKb, float kBscale, float enemydamage, float enemyweight, out float stunTime) {
 		float power = (((((enemydamage / 10.0f + enemydamage * (float)damage / 20.0f) * (200.0f / (enemyweight + 100.0f)) * 1.4f) + 18.0f) * kBscale / 100.0f) + baseKb);
 		print(power);
-		stunTime = power * 0.4f / 60.0f;
+		stunTime = power * 0.3f / 60.0f;
 		Vector3 temp = Quaternion.Euler(0.0f, 0.0f, xDirection * (angle - 90.0f)) * (power * Vector3.up);
 		return new Vector2(temp.x, temp.y);
 	}
@@ -122,11 +131,12 @@ public class HitboxManager : MonoBehaviour {
 		if (1 << other.gameObject.layer == targetLayer)
 		{
 			Hitbox hitbox = hitboxes[(int)activeMove];
-			if (hitbox.CheckNoHit(other.gameObject))
+			Avatar enemy = other.gameObject.GetComponentInParent<Avatar>();
+			if (hitbox.CheckNoHit(enemy.gameObject))
 			{
 				return; // prevent more than one collider of an attack triggering
 			}
-			Avatar enemy = other.gameObject.GetComponent<Avatar>();
+
 			int damage = hitbox.baseDamage;
 			float angle = hitbox.baseAngle;
 			float baseKb = hitbox.baseKnockback;
@@ -141,7 +151,7 @@ public class HitboxManager : MonoBehaviour {
 			float freezeTime = 0.0f;
 			if (hitbox.hasFreezeFrames)
 			{
-				freezeTime = (damage / 3.0f + 5.0f) / 60.0f;
+				freezeTime = hitbox.freezeFrameMultiplier * (damage / 3.0f + 5.0f) / 60.0f;
 				avatar.StartFreezeFrame(freezeTime);
 			}
 			float stunTime = 0.0f;
@@ -149,7 +159,9 @@ public class HitboxManager : MonoBehaviour {
 			Vector2 finalKb = CalculateKnockback(damage, xDirection, angle, baseKb, kBscale, enemy.Damage, enemy.Weight, out stunTime);
 			enemy.TakeHit(damage, freezeTime, stunTime, finalKb);
 			avatar.AddMeter(damage);
-			hitbox.AddNoHit(other.gameObject);
+			hitbox.AddNoHit(enemy.gameObject);
+			audio.PlayOneShot(hitbox.hitSound);
+            fx.SpawnHitEffect(hitbox.hitEffectPrefab, other.transform.position);
 		}
 	}
 }

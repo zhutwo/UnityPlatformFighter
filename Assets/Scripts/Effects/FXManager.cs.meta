@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 324be38c50ad4764fbd6f2c5c0e834a7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - knockbackTrailPrefab: {fileID: 1965343156803978, guid: 14beed554e1eb844db2e8cdfbaaee37a,
+      type: 3}
+  - dashPoofPrefab: {fileID: 1965343156803978, guid: b5b140b35c47a484b9f6eb36afd6160a,
+      type: 3}
+  - hardLandPoofPrefab: {fileID: 7964319181334305409, guid: 0d6a2b482cf2522449b7f19d4ec766c3,
+      type: 3}
+  - swordHitPrefab: {fileID: 1845240806346120, guid: 07494ddf1d41def4c9ba7ad842f225ba,
+      type: 3}
+  - lightHitPrefab: {fileID: 100000, guid: 547a4c2c28d512b40ad4dadf287bd911, type: 3}
+  - bigHitPrefab: {fileID: 100002, guid: 58114290970dfff488db149d457f3707, type: 3}
+  - ringOutPrefab: {fileID: 7335894568392745958, guid: 41dc30039303db34aa677079db3af000,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
